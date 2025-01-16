@@ -1,7 +1,7 @@
 import express from 'express';
 import { config } from 'dotenv';
 
-import { chatRouter } from '@/routes';
+import { chatRouter, authRouter } from '@/routes';
 import { errorRequestHandler } from '@/util/error';
 
 config();
@@ -14,7 +14,8 @@ const app = express();
 app.use(express.urlencoded({ extended: false }));
 app.use(express.json());
 
-app.use(chatRouter);
+app.use('/chat', chatRouter);
+app.use('/auth', authRouter);
 app.use(errorRequestHandler);
 
 app.listen(PORT, HOST, () => console.log(`Listening on http://${HOST}:${PORT}`));

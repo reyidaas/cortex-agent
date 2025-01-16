@@ -1,6 +1,14 @@
-declare namespace NodeJS {
-  export interface ProcessEnv {
-    HOST?: string;
-    PORT?: string;
+import type { PrismaClient } from '@prisma/client';
+
+declare global {
+  var prisma: PrismaClient | undefined;
+
+  namespace NodeJS {
+    export interface ProcessEnv {
+
+      NODE_ENV: 'production' | 'development';
+      HOST?: string;
+      PORT?: string;
+    }
   }
 }
