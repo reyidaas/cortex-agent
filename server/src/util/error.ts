@@ -15,5 +15,5 @@ export const errorRequestHandler: ErrorRequestHandler<
     : 'Internal server error';
   const status = hasPropertyOfType('status', 'number')(error) ? error.status : 500;
 
-  res.json({ result: 'failure', data: { message, status } });
+  res.status(status).json({ result: 'failure', data: { message, status } });
 };

@@ -11,4 +11,10 @@ declare global {
       PORT?: string;
     }
   }
+
+  namespace Express {
+    interface Request {
+      userId: string;
+    }
+  }
 }
