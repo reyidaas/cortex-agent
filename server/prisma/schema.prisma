@@ -14,7 +14,28 @@ datasource db {
 }
 
 model User {
-  id     String @id @default(uuid())
-  apiKey String @unique
-  name   String
+  id        String   @id @default(uuid())
+  apiKey    String   @unique
+  name      String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now()) @updatedAt
+}
+
+model Tool {
+  id          String   @id @default(uuid())
+  name        String   @unique
+  description String   @unique
+  instruction String   @unique
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  actions     Action[]
+}
+
+model Action {
+  id        String   @id @default(uuid())
+  name      String   @unique
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  toolId    String
+  tool      Tool     @relation(fields: [toolId], references: [id])
 }
