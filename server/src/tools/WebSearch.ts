@@ -2,10 +2,12 @@ import { Tool } from '@/models/Tool';
 
 export class WebSearch extends Tool {
   constructor() {
-    super('webSearch');
+    super({
+      name: 'webSearch',
+      instruction: '',
+      description: '',
+    });
   }
 
-  override execute(): void {
-      
-  }
+  override execute(): void {}
 }

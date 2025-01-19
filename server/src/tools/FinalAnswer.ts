@@ -2,10 +2,12 @@ import { Tool } from '@/models/Tool';
 
 export class FinalAnswer extends Tool {
   constructor() {
-    super('finalAnswer');
+    super({
+      name: 'finalAnswer',
+      instruction: '',
+      description: '',
+    });
   }
 
-  override execute(): void {
-      
-  }
+  override execute(): void {}
 }
