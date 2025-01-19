@@ -14,11 +14,13 @@ datasource db {
 }
 
 model User {
-  id        String   @id @default(uuid())
-  apiKey    String   @unique
-  name      String
-  createdAt DateTime @default(now())
-  updatedAt DateTime @default(now()) @updatedAt
+  id          String       @id @default(uuid())
+  apiKey      String       @unique
+  name        String
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @default(now()) @updatedAt
+  environment Environment?
+  personality Personality?
 }
 
 model Tool {
@@ -38,4 +40,22 @@ model Action {
   updatedAt DateTime @updatedAt
   toolId    String
   tool      Tool     @relation(fields: [toolId], references: [id])
+}
+
+model Environment {
+  id        String   @id @default(uuid())
+  content   String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  userId    String   @unique
+  user      User     @relation(fields: [userId], references: [id])
+}
+
+model Personality {
+  id        String   @id @default(uuid())
+  content   String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  userId    String   @unique
+  user      User     @relation(fields: [userId], references: [id])
 }
