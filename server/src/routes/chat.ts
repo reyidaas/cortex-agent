@@ -5,4 +5,4 @@ import { authMiddleware } from '@/middleware/auth';
 
 export const router = Router();
 
-router.post('/', authMiddleware, chatController);
+router.post('/', chatController);

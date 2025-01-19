@@ -4,7 +4,7 @@ import { register } from '@/services/auth';
 import type { ResultRequestHandler } from '@/types/common';
 import type { registerReqBodySchema } from '@/schema/auth';
 
-export const registerHandler: ResultRequestHandler<
+export const registerController: ResultRequestHandler<
   string,
   ZodInfer<typeof registerReqBodySchema>
 > = async (req, res, next) => {
