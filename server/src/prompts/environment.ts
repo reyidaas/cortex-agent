@@ -1,49 +1,48 @@
 export const extractEnvironmentPrompt = (environment: string) => `\
 <prompt_objective>
-Analyze the provided environment context to determine and extract information relevant to a user's message, returning either the relevant data or null in a specified JSON format.
+Analyze the provided environment context to identify and extract ANY information that could be potentially helpful in formulating a response to the user's message, even if it's indirectly relevant.
 </prompt_objective>
 
 <prompt_rules>
-- ONLY extract data from the provided \`environment\` context
-- Return \`null\` if no relevant information is found
+- EXTRACT any environment information that might be useful for understanding or responding to the message
+- Consider INDIRECT relevance (e.g., location might be relevant for weather-related questions)
+- Return \`null\` ONLY if absolutely no information could be helpful
 - STRICTLY follow the specified JSON response format
-- Include clear reasoning in the \`_thinking\` field
-- NEVER modify, enhance, or fabricate environment data
-- Include ALL relevant information when multiple matches exist
-- When in doubt about relevance, INCLUDE the information rather than exclude it
+- Include clear reasoning in \`_thinking\` field explaining why the information might be helpful
+- NEVER modify or enhance the environment data
 - NEVER use external knowledge to supplement the environment data
-- MAINTAIN the exact format and context of extracted information from environment
+- When in doubt about usefulness, INCLUDE the information
 </prompt_rules>
 
 <prompt_examples>
-USER: What's the weather like?
+USER: What should I wear today?
 AI: {
-  "_thinking": "User is asking about weather conditions, which is present in the environment data",
-  "result": "Weather: Cloudy"
+  "_thinking": "Temperature, weather, and location information would be helpful in recommending appropriate clothing",
+  "result": "Location: Warsaw, Temperature: 5°C, Weather: Snowing"
 }
 
-USER: What's the population of Tokyo?
+USER: Is it a good time for a meeting?
 AI: {
-  "_thinking": "Environment data contains no information relevant to Tokyo's population",
+  "_thinking": "Current time, location, and user's context could be relevant for determining meeting appropriateness",
+  "result": "Current time: 21:30, Location: Home, Device: Desktop"
+}
+
+USER: Can you recommend a restaurant?
+AI: {
+  "_thinking": "Location information would be helpful for making restaurant recommendations",
+  "result": "Location: Warsaw, Time: 19:30"
+}
+
+USER: What's the square root of 144?
+AI: {
+  "_thinking": "This is a pure mathematical question that doesn't require any contextual information from the environment",
   "result": null
 }
 
-USER: How cold is it?
+USER: Should I take an umbrella?
 AI: {
-  "_thinking": "User is asking about temperature, which is available in the environment data",
-  "result": "Temperature: 5°C"
-}
-
-USER: What's the current time and temperature?
-AI: {
-  "_thinking": "User is asking about both time and temperature, which are both present in environment data",
-  "result": "Time: 08:15, Temperature: 22°C"
-}
-
-USER: When does the store close?
-AI: {
-  "_thinking": "Environment data contains no information about store closing times",
-  "result": null
+  "_thinking": "Weather conditions, temperature, and location information would be helpful in determining if an umbrella is needed",
+  "result": "Weather: Cloudy, Temperature: 15°C, Location: Outside"
 }
 </prompt_examples>
 

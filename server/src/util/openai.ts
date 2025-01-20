@@ -31,7 +31,7 @@ export const getStructuredCompletion = async <T extends ZodSchema>({
 
   const response = await openai.beta.chat.completions.parse({
     model,
-    messages: [],
+    messages,
     response_format: zodResponseFormat(schema, name),
   });
 

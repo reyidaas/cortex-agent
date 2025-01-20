@@ -1,16 +1,11 @@
-import type { Prisma } from '@prisma/client';
+import type { Prisma, Tool } from '@prisma/client';
 
 import { prisma } from '@/clients/prisma';
 
-const TOOL_OMIT: Prisma.ToolOmit = {
-  createdAt: true,
-  updatedAt: true,
-} as const;
+export const getTools = async <T extends Prisma.ToolDefaultArgs | undefined>(
+  payload?: T,
+): Promise<T extends undefined ? Tool : Prisma.ToolGetPayload<T>> => {
+  const tools = await prisma.tool.findMany(payload);
 
-type Tool = Prisma.ToolGetPayload<{ omit: typeof TOOL_OMIT }>;
-
-export const getTools = async (): Promise<Tool[]> => {
-  const tools = await prisma.tool.findMany({ omit: TOOL_OMIT });
-
-  return tools;
+  return tools as T extends undefined ? Tool : Prisma.ToolGetPayload<T>;
 };

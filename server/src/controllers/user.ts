@@ -1,9 +1,9 @@
 import { infer as ZodInfer } from 'zod';
 
 import { ResultRequestHandler } from '@/types/common';
-import { updateContentSchema } from '@/schema/user';
 import { createOrUpdateEnvironment } from '@/services/environment';
 import { createOrUpdatePersonality } from '@/services/personality';
+import type { updateContentSchema } from '@/schema/user';
 
 export const environmentController: ResultRequestHandler<
   never,
@@ -22,8 +22,7 @@ export const personalityController: ResultRequestHandler<
   ZodInfer<typeof updateContentSchema>
 > = async (req, res, next) => {
   try {
-    const { content } = await updateContentSchema.parseAsync(req.body);
-    await createOrUpdatePersonality(req.userId, content);
+    await createOrUpdatePersonality(req.userId, req.body.content);
     res.sendStatus(200);
   } catch (error) {
     next(error);
