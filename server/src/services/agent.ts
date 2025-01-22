@@ -38,6 +38,7 @@ const extractPersonality = async (message: string, personality: string): Promise
 const generateToolsQueries = async (
   message: string,
   tools: Tool[],
+  state: State,
 ): Promise<ToolQuery[] | null> => {
   const schema = generateResultWithReasoningSchema(
     z
@@ -52,7 +53,7 @@ const generateToolsQueries = async (
   const response = await getStructuredCompletion({
     schema,
     name: 'generate-tools-queries',
-    system: generateToolsQueriesPrompt(tools),
+    system: generateToolsQueriesPrompt(tools, state),
     message,
   });
   console.log('TOOLS', response);
@@ -62,17 +63,13 @@ const generateToolsQueries = async (
 
 export const runAgent = async (userId: string, message: string): Promise<string> => {
   const user = await getUserOrThrow(userId, { include: { environment: true, personality: true } });
-  // const tools = await getTools();
   const state = new State();
 
-  state.set('environment', await extractEnvironment(message, user.environment?.content ?? ''));
-  state.set('personality', await extractPersonality(message, user.personality?.content ?? ''));
+  state.updateThinkingPhase('environment', await extractEnvironment(message, user.environment?.content ?? ''));
+  state.updateThinkingPhase('personality', await extractPersonality(message, user.personality?.content ?? ''));
 
   const tools = await getTools({ select: { name: true, description: true } });
-  state.set(
-    'tools',
-    await generateToolsQueries(message, tools),
-  );
+  state.updateThinkingPhase('tools', await generateToolsQueries(message, tools, state));
 
   return '';
 };

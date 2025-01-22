@@ -4,27 +4,65 @@ export interface ToolQuery {
 }
 
 interface StateProperties {
-  environment: string | null;
-  personality: string | null;
-  tools: ToolQuery[] | null;
+  thinking: {
+    environment: string | null;
+    personality: string | null;
+    tools: ToolQuery[] | null;
+    memories: null;
+  };
+  planning: {};
+  execution: {};
 }
-
-type Setter<T extends keyof StateProperties> = (
-  currentValue: StateProperties[T],
-) => StateProperties[T];
 
 export class State {
   private state: StateProperties = {
-    environment: null,
-    personality: null,
-    tools: null,
+    thinking: {
+      environment: null,
+      personality: null,
+      tools: null,
+      memories: null,
+    },
+    planning: {},
+    execution: {},
   };
 
-  get<T extends keyof StateProperties>(key: T): StateProperties[T] {
-    return this.state[key];
+  updateThinkingPhase<T extends keyof StateProperties['thinking']>(
+    key: T,
+    value: StateProperties['thinking'][T],
+  ): void {
+    this.state.thinking[key] = value;
   }
 
-  set<T extends keyof StateProperties>(key: T, value: StateProperties[T] | Setter<T>): void {
-    this.state[key] = typeof value === 'function' ? value(this.state[key]) : value;
+  updatePlanningPhase<T extends keyof StateProperties['planning']>(
+    key: T,
+    value: StateProperties['planning'][T],
+  ): void {
+    this.state.planning[key] = value;
+  }
+
+  updateExecutionPhase<T extends keyof StateProperties['execution']>(
+    key: T,
+    value: StateProperties['execution'][T],
+  ): void {
+    this.state.execution[key] = value;
+  }
+
+  getFromThinkingPhase<T extends keyof StateProperties['thinking']>(
+    key: T,
+  ): StateProperties['thinking'][T] {
+    return this.state.thinking[key];
+  }
+
+  getFromPlanningPhase<T extends keyof StateProperties['planning']>(
+    key: T,
+  ): StateProperties['planning'][T] {
+    return this.state.planning[key];
+  }
+
+  getFromExecutionPhase<T extends keyof StateProperties['execution']>(
+    key: T,
+  ): StateProperties['execution'][T] {
+
+    return this.state.execution[key];
   }
 }

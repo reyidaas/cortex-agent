@@ -1,18 +1,24 @@
+import type { State } from '@/models/State';
+
 export interface Tool {
   name: string;
   description: string;
 }
 
-export const generateToolsQueriesPrompt = (tools: Tool[]): string => {
-  const parsedTools = tools.map(({ name, description }) => `\
+export const generateToolsQueriesPrompt = (tools: Tool[], state: State): string => {
+  const parsedTools = tools
+    .map(
+      ({ name, description }) => `\
 <tool name="${name}">
 ${description}
 </tool>\
-`).join('\n');
+`,
+    )
+    .join('\n');
 
   return `\
 <prompt_objective>
-Generate up to 10 relevant search/action queries for provided tools based on user input, returning them in a specified JSON format with reasoning.
+Generate up to 10 relevant search/action queries for provided tools based on user input, returning them in a specified JSON format with reasoning. Consider environment and personality context to generate more relevant queries.
 </prompt_objective>
 
 <prompt_rules>
@@ -85,6 +91,14 @@ AI: {
 <tools>
 ${parsedTools}
 </tools>
+
+<environment>
+${state.getFromThinkingPhase('environment') ?? ''}
+</environment>
+
+<personality>
+${state.getFromThinkingPhase('personality') ?? ''}
+</personality>
 </context>\
-`
-}
+`;
+};
