@@ -1,11 +1,11 @@
 import { z } from 'zod';
 
 import { getUserOrThrow } from '@/services/user';
-// import { getTools } from '@/services/tool';
-import { State } from '@/models/State';
+import { getTools } from '@/services/tools';
+import { State, type ToolQuery } from '@/models/State';
 import { extractEnvironmentPrompt } from '@/prompts/environment';
 import { extractPersonalityPrompt } from '@/prompts/personality';
-// import { generateToolsQueries } from '@/prompts/tool';
+import { generateToolsQueriesPrompt, type Tool } from '@/prompts/tools';
 import { getStructuredCompletion } from '@/util/openai';
 import { generateResultWithReasoningSchema } from '@/schema/common';
 
@@ -35,7 +35,30 @@ const extractPersonality = async (message: string, personality: string): Promise
   return response?.result ?? null;
 };
 
-// const generateToolsQueries = () => {};
+const generateToolsQueries = async (
+  message: string,
+  tools: Tool[],
+): Promise<ToolQuery[] | null> => {
+  const schema = generateResultWithReasoningSchema(
+    z
+      .array(
+        z.object({
+          query: z.string(),
+          tool: z.string(),
+        }),
+      )
+      .or(z.null()),
+  );
+  const response = await getStructuredCompletion({
+    schema,
+    name: 'generate-tools-queries',
+    system: generateToolsQueriesPrompt(tools),
+    message,
+  });
+  console.log('TOOLS', response);
+
+  return response?.result ?? null;
+};
 
 export const runAgent = async (userId: string, message: string): Promise<string> => {
   const user = await getUserOrThrow(userId, { include: { environment: true, personality: true } });
@@ -44,6 +67,12 @@ export const runAgent = async (userId: string, message: string): Promise<string>
 
   state.set('environment', await extractEnvironment(message, user.environment?.content ?? ''));
   state.set('personality', await extractPersonality(message, user.personality?.content ?? ''));
+
+  const tools = await getTools({ select: { name: true, description: true } });
+  state.set(
+    'tools',
+    await generateToolsQueries(message, tools),
+  );
 
   return '';
 };

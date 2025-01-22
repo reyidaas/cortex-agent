@@ -1,6 +1,12 @@
+export interface ToolQuery {
+  query: string;
+  tool: string;
+}
+
 interface StateProperties {
   environment: string | null;
   personality: string | null;
+  tools: ToolQuery[] | null;
 }
 
 type Setter<T extends keyof StateProperties> = (
@@ -11,6 +17,7 @@ export class State {
   private state: StateProperties = {
     environment: null,
     personality: null,
+    tools: null,
   };
 
   get<T extends keyof StateProperties>(key: T): StateProperties[T] {
