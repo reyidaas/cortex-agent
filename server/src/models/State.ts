@@ -3,12 +3,17 @@ export interface ToolQuery {
   tool: string;
 }
 
+export interface MemoryQuery {
+  query: string;
+  category: string;
+}
+
 interface StateProperties {
   thinking: {
     environment: string | null;
     personality: string | null;
     tools: ToolQuery[] | null;
-    memories: null;
+    memories: MemoryQuery[] | null;
   };
   planning: {};
   execution: {};
