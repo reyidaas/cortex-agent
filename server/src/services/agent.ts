@@ -91,25 +91,29 @@ const generateMemoryCategoriesQueries = async (
 };
 
 export const runAgent = async (userId: string, message: string): Promise<string> => {
-  const user = await getUserOrThrow(userId, { include: { environment: true, personality: true } });
+  const { environment, personality } = await getUserOrThrow(userId, {
+    include: { environment: true, personality: true },
+  });
   const state = new State();
 
-  state.updateThinkingPhase(
-    'environment',
-    await extractEnvironment(message, user.environment?.content ?? ''),
-  );
-  state.updateThinkingPhase(
-    'personality',
-    await extractPersonality(message, user.personality?.content ?? ''),
-  );
+  const [extractedEnvironment, extractedPersonality] = await Promise.all([
+    environment && extractEnvironment(message, environment.content),
+    personality && extractPersonality(message, personality.content),
+  ]);
+
+  state.updateThinkingPhase('environment', extractedEnvironment);
+  state.updateThinkingPhase('personality', extractedPersonality);
 
   const tools = await getTools({ select: { name: true, description: true } });
   const memoryCategories = await getMemoryCategories({ select: { name: true, description: true } });
-  state.updateThinkingPhase('tools', await generateToolsQueries(message, tools, state));
-  state.updateThinkingPhase(
-    'memories',
-    await generateMemoryCategoriesQueries(message, memoryCategories, state),
-  );
+
+  const [toolsQueries, memoryCategoriesQueries] = await Promise.all([
+    generateToolsQueries(message, tools, state),
+    generateMemoryCategoriesQueries(message, memoryCategories, state),
+  ]);
+
+  state.updateThinkingPhase('tools', toolsQueries);
+  state.updateThinkingPhase('memories', memoryCategoriesQueries);
 
   return '';
 };
