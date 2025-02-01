@@ -4,10 +4,12 @@ import { getUserOrThrow } from '@/services/user';
 import { getTools } from '@/services/tools';
 import { getMemoryCategories } from '@/services/memories';
 import { State, type ToolQuery, type MemoryQuery } from '@/models/State';
+import { Task } from '@/models/Task';
 import { extractEnvironmentPrompt } from '@/prompts/environment';
 import { extractPersonalityPrompt } from '@/prompts/personality';
 import { generateToolsQueriesPrompt, type Tool } from '@/prompts/tools';
 import { generateMemoryCategoriesQueriesPrompt, type MemoryCategory } from '@/prompts/memories';
+import { generateOrUpdateTasksPrompt, type GeneratedTask } from '@/prompts/tasks';
 import { getStructuredCompletion } from '@/util/openai';
 import { generateResultWithReasoningSchema } from '@/schema/common';
 
@@ -90,6 +92,45 @@ const generateMemoryCategoriesQueries = async (
   return response?.result ?? null;
 };
 
+const generateOrUpdateTasks = async (
+  message: string,
+  tools: Tool[],
+  state: State,
+): Promise<GeneratedTask[]> => {
+  const schema = generateResultWithReasoningSchema(
+    z.array(
+      z.object({
+        id: z.string().or(z.null()),
+        name: z.string(),
+        description: z.string(),
+        status: z.enum(['pending', 'completed']),
+      }),
+    ),
+  );
+
+  const response = await getStructuredCompletion({
+    schema,
+    name: 'generate-or-update-tasks',
+    system: generateOrUpdateTasksPrompt(tools, state),
+    message,
+  });
+  console.log('GENERATE OR UPDATE TASKS', response);
+
+  return response?.result ?? [];
+};
+
+const updateOrCreateTask =
+  (state: State) =>
+  ({ id, ...fields }: GeneratedTask): Task => {
+    const existingTask = id && state.getFromPlanningPhase('tasks').find((task) => task.id === id);
+    if (existingTask) {
+      existingTask.update(fields);
+      return existingTask;
+    }
+
+    return new Task(fields);
+  };
+
 export const runAgent = async (userId: string, message: string): Promise<string> => {
   const { environment, personality } = await getUserOrThrow(userId, {
     include: { environment: true, personality: true },
@@ -114,6 +155,9 @@ export const runAgent = async (userId: string, message: string): Promise<string>
 
   state.updateThinkingPhase('tools', toolsQueries);
   state.updateThinkingPhase('memories', memoryCategoriesQueries);
+
+  const generatedTasks = await generateOrUpdateTasks(message, tools, state);
+  state.updatePlanningPhase('tasks', generatedTasks.map(updateOrCreateTask(state)));
 
   return '';
 };

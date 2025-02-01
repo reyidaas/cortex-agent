@@ -55,6 +55,20 @@ AI: {
 }
 </prompt_examples>
 
+Process each interaction by:
+1. Analyze user's message to understand the topic and context
+2. Scan personality data for:
+   - Direct topic matches
+   - Related experiences/preferences
+   - Contextual background
+3. Evaluate if found information could:
+   - Help personalize the response
+   - Provide valuable context
+4. Format result:
+   - If helpful → Extract with "User/User's" prefix
+   - If not helpful → Return null
+5. Return JSON with reasoning and result
+
 <context>
 <personality>
 ${personality}

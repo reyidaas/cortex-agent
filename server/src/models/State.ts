@@ -1,3 +1,6 @@
+import type { Task } from './Task';
+import type { Memory } from '../prompts/memories';
+
 export interface ToolQuery {
   query: string;
   tool: string;
@@ -15,7 +18,10 @@ interface StateProperties {
     tools: ToolQuery[] | null;
     memories: MemoryQuery[] | null;
   };
-  planning: {};
+  planning: {
+    tasks: Task[];
+    memories: Memory[];
+  };
   execution: {};
 }
 
@@ -27,7 +33,10 @@ export class State {
       tools: null,
       memories: null,
     },
-    planning: {},
+    planning: {
+      tasks: [],
+      memories: [],
+    },
     execution: {},
   };
 
@@ -67,7 +76,6 @@ export class State {
   getFromExecutionPhase<T extends keyof StateProperties['execution']>(
     key: T,
   ): StateProperties['execution'][T] {
-
     return this.state.execution[key];
   }
 }

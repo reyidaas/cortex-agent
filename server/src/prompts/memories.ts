@@ -5,6 +5,11 @@ export interface MemoryCategory {
   description: string;
 }
 
+export interface Memory {
+  name: string;
+  content: string;
+}
+
 export const generateMemoryCategoriesQueriesPrompt = (memories: MemoryCategory[], state: State): string => {
   const memoryCategories = memories.map(({ name, description }) => `\
 <memory_category name="${name}">
@@ -79,6 +84,15 @@ AI: {
 }
 </prompt_examples>
 
+Process user input by:
+1. Analyzing message to identify required information
+2. Matching needs with provided memory_categories
+3. Generating specific queries for relevant categories
+4. Ordering queries by logical dependencies
+5. Documenting reasoning in "_thinking"
+6. Returning JSON with queries array or null
+
+<context>
 <memory_categories>
 ${memoryCategories}
 </memory_categories>
@@ -89,6 +103,7 @@ ${state.getFromThinkingPhase('environment')}
 
 <personality>
 ${state.getFromThinkingPhase('personality')}
-</personality>\
+</personality>
+</context>\
 `;
 };

@@ -22,6 +22,16 @@ const TOOLS = [
     description: 'Use this tool to get tasks from todo list app or create them.',
     instruction: 'Generate a JSON: { "todo": "" }',
   },
+  {
+    name: 'web',
+    description: 'Use this tool to access web.',
+    instruction: 'Generate a JSON: { "query": "" }',
+  },
+  {
+    name: 'mail',
+    description: 'Use this tool integrate with mails.',
+    instruction: 'Generate a JSON: { "mail": "" }',
+  },
 ] as const satisfies Prisma.ToolCreateInput[];
 const MEMORY_CATEGORIES = [
   {

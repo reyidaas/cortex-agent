@@ -46,6 +46,12 @@ AI: {
 }
 </prompt_examples>
 
+Process user message by:
+1. Analyze message to identify potential information needs (both explicit and implicit)
+2. Scan environment data for relevant or contextually helpful information
+3. Extract ALL potentially useful data
+4. Return JSON with reasoning and result (or null if nothing useful)
+
 <context>
 <environment>
 ${environment}
