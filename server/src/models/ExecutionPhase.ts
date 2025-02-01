@@ -4,13 +4,13 @@ import type { TaskStep } from '@/models/TaskStep';
 
 interface ExecutionState {
   current: {
-    task: Task;
-    step: TaskStep;
-  } | null;
+    task: Task | null;
+    step: TaskStep | null;
+  };
 }
 
 export class ExecutionPhase extends GetterSetter<ExecutionState> {
   constructor() {
-    super({ current: null });
+    super({ current: { task: null, step: null } });
   }
 }

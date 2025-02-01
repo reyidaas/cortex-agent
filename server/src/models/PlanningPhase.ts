@@ -1,5 +1,11 @@
+import { z } from 'zod';
+
+import { generateOrUpdateTasksPrompt, type GeneratedTask } from '@/prompts/tasks';
+import { getStructuredCompletion } from '@/util/openai';
+import { generateResultWithReasoningSchema } from '@/schema/common';
+import { State } from '@/models/State';
+import { Task } from '@/models/Task';
 import { GetterSetter } from '@/models/GetterSetter';
-import type { Task } from '@/models/Task';
 import type { Memory } from '@/prompts/memories';
 
 interface PlanningState {
@@ -10,5 +16,46 @@ interface PlanningState {
 export class PlanningPhase extends GetterSetter<PlanningState> {
   constructor() {
     super({ tasks: [], memories: [] });
+  }
+
+  async generateOrUpdateTasks(message: string, state: State): Promise<Task[]> {
+    const tools = state.get('config').get('tools');
+    const schema = generateResultWithReasoningSchema(
+      z.array(
+        z.object({
+          id: z.string().or(z.null()),
+          name: z.string(),
+          description: z.string(),
+          status: z.enum(['pending', 'completed']),
+        }),
+      ),
+    );
+
+    const response = await getStructuredCompletion({
+      schema,
+      name: 'generate-or-update-tasks',
+      system: generateOrUpdateTasksPrompt(tools, state),
+      message,
+    });
+    console.log('GENERATE OR UPDATE TASKS', response);
+
+    const generatedTasks = response?.result ?? [];
+    this.updateTasks(generatedTasks);
+
+    return this.get('tasks');
+  }
+
+  private updateTasks(tasks: GeneratedTask[]) {
+    this.set('tasks', (currentTasks) =>
+      tasks.map(({ id, name, description }) => {
+        const existingTask = id && currentTasks.find((task) => id === task.id);
+        if (existingTask) {
+          existingTask.update({ name, description });
+          return existingTask;
+        }
+
+        return new Task({ name, description });
+      }),
+    );
   }
 }

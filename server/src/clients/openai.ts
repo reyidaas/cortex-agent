@@ -1,4 +1,7 @@
 import { OpenAI } from 'openai';
+import { config } from 'dotenv';
+
+config();
 
 export const openai = global.openai ?? new OpenAI();
 
