@@ -43,10 +43,11 @@ model Action {
 }
 
 model Memory {
-  id         String   @id @default(uuid())
+  id         String         @id @default(uuid())
+  name       String
   content    String
-  createdAt  DateTime @default(now())
-  updatedAt  DateTime @updatedAt
+  createdAt  DateTime       @default(now())
+  updatedAt  DateTime       @updatedAt
   categoryId String
   category   MemoryCategory @relation(fields: [categoryId], references: [id])
 }

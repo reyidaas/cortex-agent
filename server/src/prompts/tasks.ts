@@ -1,46 +1,48 @@
-import type { Tool } from './tools';
-import type { State } from '../models/State';
-import type { TaskStatus } from '../models/Task';
+import type { Tool } from '@/prompts/tools';
+import type { State } from '@/models/State';
+import type { Task } from '@/models/Task';
 
-export interface GeneratedTask {
+export type GeneratedTask = Pick<Task, 'name' | 'description' | 'status'> & {
   id: string | null;
-  name: string;
-  description: string;
-  status: TaskStatus;
-}
+};
 
 export const generateOrUpdateTasksPrompt = (tools: Tool[], state: State): string => {
-  const memoryCategoriesQueries = state.getFromThinkingPhase('memories')?.map(({ category, query }) => `\
-<memory_category name="${category}">
-${query}
-</memory_category>\
-`).join('\n') ?? '';
-
-  const toolsQueries = state.getFromThinkingPhase('tools')?.map(({ tool, query }) => `\
-<tool name="${tool}">
-${query}
-</memory_category>\
-`).join('\n') ?? '';
-
-const availableTools = tools.map(({ name, description }) => `\
+  const availableTools =
+    tools
+      .map(
+        ({ name, description }) => `\
 <tool name="${name}">
 ${description}
-</memory_category>\
-`).join('\n') ?? '';
+</tool>\
+`,
+      )
+      .join('\n') ?? '';
 
-const memories = state.getFromPlanningPhase('memories').map(({ name, content }) => `\
+  const memories = state
+    .get('planning')
+    .get('memories')
+    .map(
+      ({ name, content }) => `\
 <memory name="${name}">
 ${content}
 </memory>\
-`).join('\n');
+`,
+    )
+    .join('\n');
 
-const currentTasks = state.getFromPlanningPhase('tasks').map(({ id, name, description, status }) => `\
+  const currentTasks = state
+    .get('planning')
+    .get('tasks')
+    .map(
+      ({ id, name, description, status }) => `\
 <task id="${id}" name="${name}" status="${status}">
 <description>
 ${description}
 </description>
 </task>\
-`).join('\n');
+`,
+    )
+    .join('\n');
 
   return `\
 <prompt_objective>
@@ -119,21 +121,7 @@ When processing a request:
 6. Return JSON response with thinking process and ordered task array
 
 <context>
-<personality>
-${state.getFromThinkingPhase('personality')}
-</personality>
-
-<environment>
-${state.getFromThinkingPhase('environment')}
-</environment>
-
-<initial_thoughts_about_needed_memory_categories>
-${memoryCategoriesQueries}
-</initial_thoughts_about_needed_memory_categories>
-
-<initial_thoughts_about_needed_tools>
-${toolsQueries}
-</initial_thoughts_about_needed_tools>
+${state.get('thinking').parseToPromptText(['environment', 'personality', 'memories', 'tools'])}
 
 <memories>
 ${memories}
@@ -147,5 +135,5 @@ ${availableTools}
 ${currentTasks}
 </current_tasks>
 </context>\
-`
-}
+`;
+};

@@ -1,5 +1,6 @@
 import type { ToolName } from '@/tools';
 
+// TODO: tool - unimplemented
 interface ToolArgs {
   name: ToolName;
   description: string;

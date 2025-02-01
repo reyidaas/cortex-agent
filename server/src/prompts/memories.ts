@@ -1,21 +1,29 @@
+import type {
+  MemoryCategory as PrismaMemoryCategory,
+  Memory as PrismaMemory,
+} from '@prisma/client';
+
 import type { State } from '@/models/State';
 
-export interface MemoryCategory {
-  name: string;
-  description: string;
-}
+// TODO: memory categories - move this elsewhere later
+export type MemoryCategory = Pick<PrismaMemoryCategory, 'name' | 'description'>;
 
-export interface Memory {
-  name: string;
-  content: string;
-}
+// TODO: memories - move this elsewhere later
+export type Memory = Pick<PrismaMemory, 'name' | 'content'>;
 
-export const generateMemoryCategoriesQueriesPrompt = (memories: MemoryCategory[], state: State): string => {
-  const memoryCategories = memories.map(({ name, description }) => `\
+export const generateMemoryCategoriesQueriesPrompt = (
+  memories: MemoryCategory[],
+  state: State,
+): string => {
+  const memoryCategories = memories
+    .map(
+      ({ name, description }) => `\
 <memory_category name="${name}">
 ${description}
 </memory_category>\
-`).join('\n');
+`,
+    )
+    .join('\n');
 
   return `\
 <prompt_objective>
@@ -97,13 +105,7 @@ Process user input by:
 ${memoryCategories}
 </memory_categories>
 
-<environment>
-${state.getFromThinkingPhase('environment')}
-</environment>
-
-<personality>
-${state.getFromThinkingPhase('personality')}
-</personality>
+${state.get('thinking').parseToPromptText(['environment', 'personality'])}
 </context>\
 `;
 };

@@ -1,6 +1,6 @@
 import { randomUUID } from 'crypto';
 
-import type { TaskStep } from './TaskStep';
+import type { TaskStep } from '@/models/TaskStep';
 
 export type TaskStatus = 'pending' | 'completed';
 

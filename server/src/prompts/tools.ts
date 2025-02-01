@@ -1,9 +1,9 @@
+import type { Tool as PrismaTool } from '@prisma/client';
+
 import type { State } from '@/models/State';
 
-export interface Tool {
-  name: string;
-  description: string;
-}
+// TODO: tools - move this elsewhere later
+export type Tool = Pick<PrismaTool, 'name' | 'description'>;
 
 export const generateToolsQueriesPrompt = (tools: Tool[], state: State): string => {
   const parsedTools = tools
@@ -99,13 +99,7 @@ Process user input by:
 ${parsedTools}
 </tools>
 
-<environment>
-${state.getFromThinkingPhase('environment') ?? ''}
-</environment>
-
-<personality>
-${state.getFromThinkingPhase('personality') ?? ''}
-</personality>
+${state.get('thinking').parseToPromptText(['environment', 'personality'])}
 </context>\
 `;
 };

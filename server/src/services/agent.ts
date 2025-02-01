@@ -3,7 +3,8 @@ import { z } from 'zod';
 import { getUserOrThrow } from '@/services/user';
 import { getTools } from '@/services/tools';
 import { getMemoryCategories } from '@/services/memories';
-import { State, type ToolQuery, type MemoryQuery } from '@/models/State';
+import { StatusError } from '@/models/StatusError';
+import { State } from '@/models/State';
 import { Task } from '@/models/Task';
 import { extractEnvironmentPrompt } from '@/prompts/environment';
 import { extractPersonalityPrompt } from '@/prompts/personality';
@@ -12,6 +13,7 @@ import { generateMemoryCategoriesQueriesPrompt, type MemoryCategory } from '@/pr
 import { generateOrUpdateTasksPrompt, type GeneratedTask } from '@/prompts/tasks';
 import { getStructuredCompletion } from '@/util/openai';
 import { generateResultWithReasoningSchema } from '@/schema/common';
+import type { ToolQuery, MemoryQuery } from '@/models/ThinkingPhase';
 
 const extractEnvironment = async (message: string, environment: string): Promise<string | null> => {
   const schema = generateResultWithReasoningSchema(z.string().or(z.null()));
@@ -122,7 +124,12 @@ const generateOrUpdateTasks = async (
 const updateOrCreateTask =
   (state: State) =>
   ({ id, ...fields }: GeneratedTask): Task => {
-    const existingTask = id && state.getFromPlanningPhase('tasks').find((task) => task.id === id);
+    const existingTask =
+      id &&
+      state
+        .get('planning')
+        .get('tasks')
+        .find((task) => task.id === id);
     if (existingTask) {
       existingTask.update(fields);
       return existingTask;
@@ -142,8 +149,8 @@ export const runAgent = async (userId: string, message: string): Promise<string>
     personality && extractPersonality(message, personality.content),
   ]);
 
-  state.updateThinkingPhase('environment', extractedEnvironment);
-  state.updateThinkingPhase('personality', extractedPersonality);
+  state.get('thinking').set('environment', extractedEnvironment);
+  state.get('thinking').set('personality', extractedPersonality);
 
   const tools = await getTools({ select: { name: true, description: true } });
   const memoryCategories = await getMemoryCategories({ select: { name: true, description: true } });
@@ -153,11 +160,16 @@ export const runAgent = async (userId: string, message: string): Promise<string>
     generateMemoryCategoriesQueries(message, memoryCategories, state),
   ]);
 
-  state.updateThinkingPhase('tools', toolsQueries);
-  state.updateThinkingPhase('memories', memoryCategoriesQueries);
+  state.get('thinking').set('tools', toolsQueries);
+  state.get('thinking').set('memories', memoryCategoriesQueries);
 
   const generatedTasks = await generateOrUpdateTasks(message, tools, state);
-  state.updatePlanningPhase('tasks', generatedTasks.map(updateOrCreateTask(state)));
+  state.get('planning').set('tasks', generatedTasks.map(updateOrCreateTask(state)));
+
+  // TODO: no tasks generated - handle case, when no task were generated;
+  if (!state.get('planning').get('tasks').length) {
+    throw new StatusError('No tasks were generated');
+  }
 
   return '';
 };

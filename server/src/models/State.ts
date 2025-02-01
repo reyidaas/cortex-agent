@@ -1,81 +1,20 @@
-import type { Task } from './Task';
-import type { Memory } from '../prompts/memories';
-
-export interface ToolQuery {
-  query: string;
-  tool: string;
-}
-
-export interface MemoryQuery {
-  query: string;
-  category: string;
-}
+import { GetterSetter } from '@/models/GetterSetter';
+import { ThinkingPhase } from '@/models/ThinkingPhase';
+import { PlanningPhase } from '@/models/PlanningPhase';
+import { ExecutionPhase } from '@/models/ExecutionPhase';
 
 interface StateProperties {
-  thinking: {
-    environment: string | null;
-    personality: string | null;
-    tools: ToolQuery[] | null;
-    memories: MemoryQuery[] | null;
-  };
-  planning: {
-    tasks: Task[];
-    memories: Memory[];
-  };
-  execution: {};
+  thinking: ThinkingPhase;
+  planning: PlanningPhase;
+  execution: ExecutionPhase;
 }
 
-export class State {
-  private state: StateProperties = {
-    thinking: {
-      environment: null,
-      personality: null,
-      tools: null,
-      memories: null,
-    },
-    planning: {
-      tasks: [],
-      memories: [],
-    },
-    execution: {},
-  };
-
-  updateThinkingPhase<T extends keyof StateProperties['thinking']>(
-    key: T,
-    value: StateProperties['thinking'][T],
-  ): void {
-    this.state.thinking[key] = value;
-  }
-
-  updatePlanningPhase<T extends keyof StateProperties['planning']>(
-    key: T,
-    value: StateProperties['planning'][T],
-  ): void {
-    this.state.planning[key] = value;
-  }
-
-  updateExecutionPhase<T extends keyof StateProperties['execution']>(
-    key: T,
-    value: StateProperties['execution'][T],
-  ): void {
-    this.state.execution[key] = value;
-  }
-
-  getFromThinkingPhase<T extends keyof StateProperties['thinking']>(
-    key: T,
-  ): StateProperties['thinking'][T] {
-    return this.state.thinking[key];
-  }
-
-  getFromPlanningPhase<T extends keyof StateProperties['planning']>(
-    key: T,
-  ): StateProperties['planning'][T] {
-    return this.state.planning[key];
-  }
-
-  getFromExecutionPhase<T extends keyof StateProperties['execution']>(
-    key: T,
-  ): StateProperties['execution'][T] {
-    return this.state.execution[key];
+export class State extends GetterSetter<StateProperties> {
+  constructor() {
+    super({
+      thinking: new ThinkingPhase(),
+      planning: new PlanningPhase(),
+      execution: new ExecutionPhase(),
+    });
   }
 }
