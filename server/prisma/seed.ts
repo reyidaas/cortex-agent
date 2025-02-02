@@ -15,7 +15,7 @@ const TOOLS = [
         {
           name: 'text',
           description: 'Use this action to send a text response to the user.',
-          instruction: '',
+          instruction: '{"answer": "text, that will be the final answer to the user"}',
         },
       ],
     },
@@ -64,7 +64,7 @@ const TOOLS = [
         {
           name: 'search',
           description: 'Use this action to search information in web.',
-          instruction: '',
+          instruction: '{"queries": ["array of 3-5 query strings to perform on browser in order to retrieve requested information"]}',
         },
       ],
     },
@@ -95,7 +95,7 @@ const TOOLS = [
         {
           name: 'text',
           description: 'Use this action to generate text.',
-          instruction: '',
+          instruction: '{"text": "the text for ai model request"}',
         },
       ],
     },

@@ -127,7 +127,7 @@ ${memoryCategories}
     });
     console.log('ENV', response);
 
-    const extractedEnvironment = response?.result ?? null;
+    const extractedEnvironment = response && response.result;
     this.set('environment', extractedEnvironment);
 
     return extractedEnvironment;
@@ -149,7 +149,7 @@ ${memoryCategories}
     });
     console.log('PERS', response);
 
-    const extractedPersonality = response?.result ?? null;
+    const extractedPersonality = response && response.result;
     this.set('personality', extractedPersonality);
 
     return extractedPersonality;
@@ -175,7 +175,7 @@ ${memoryCategories}
     });
     console.log('TOOLS', response);
 
-    const toolsQueries = response?.result ?? null;
+    const toolsQueries = response && response.result;
     this.set('tools', toolsQueries);
 
     return toolsQueries;
@@ -205,7 +205,7 @@ ${memoryCategories}
     });
     console.log('MEMORY CATEGORIES', response);
 
-    const memoryCategoriesQueries = response?.result ?? null;
+    const memoryCategoriesQueries = response && response.result;
     this.set('memories', memoryCategoriesQueries);
 
     return memoryCategoriesQueries;

@@ -51,6 +51,8 @@ export class Agent {
     }
 
     this.state.get('execution').set('step', nextStep);
+
+    await this.state.get('execution').generateToolPayload(this.message, this.state);
   }
 
   static async new(userId: string, message: string) {

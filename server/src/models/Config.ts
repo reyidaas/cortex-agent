@@ -33,7 +33,7 @@ export class Config extends GetterSetter<ConfigState> {
         select: {
           name: true,
           description: true,
-          actions: { select: { name: true, description: true } },
+          actions: { select: { name: true, description: true, instruction: true } },
         },
       }),
       getMemoryCategories({
