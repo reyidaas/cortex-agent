@@ -32,11 +32,12 @@ export class Agent {
       throw new StatusError('No next task was found');
     }
 
-    this.state.get('execution').set('current', { task: nextTask, step: null });
+    this.state.get('execution').set('task', nextTask);
+    this.state.get('execution').set('step', null);
   }
 
   async execute(): Promise<void> {
-    const { task } = this.state.get('execution').get('current');
+    const task = this.state.get('execution').get('task');
     if (!task) {
       throw new StatusError('There is no task to execute');
     }
@@ -49,7 +50,7 @@ export class Agent {
       throw new StatusError('There is no next step to execute');
     }
 
-    this.state.get('execution').set('current', (current) => ({ ...current, step: nextStep }));
+    this.state.get('execution').set('step', nextStep);
   }
 
   static async new(userId: string, message: string) {

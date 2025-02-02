@@ -22,6 +22,43 @@ export class PlanningPhase extends GetterSetter<PlanningState> {
     super({ tasks: [], memories: [] });
   }
 
+  parseToPromptText(fields: (keyof PlanningState)[]): string {
+    let parsedText = '';
+
+    fields.forEach((field) => {
+      if (parsedText) parsedText += '\n\n';
+
+      parsedText += (() => {
+        switch (field) {
+          case 'memories':
+            return this.parseMemoriesToPromptText();
+          case 'tasks':
+          default:
+            return '';
+        }
+      })();
+    });
+
+    return parsedText;
+  }
+
+  private parseMemoriesToPromptText(): string {
+    const memories = this.get('memories')
+      .map(
+        ({ name, content }) => `\
+<memory name="${name}">
+${content}
+</memory>`,
+      )
+      .join('\n');
+
+    return `\
+<memories>
+${memories}
+</memories>
+`;
+  }
+
   async generateOrUpdateTasks(message: string, state: State): Promise<Task[]> {
     const schema = generateResultWithReasoningSchema(
       z.array(

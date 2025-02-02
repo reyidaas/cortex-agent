@@ -13,17 +13,6 @@ ${description}
       )
       .join('\n') ?? '';
 
-  const memories = state
-    .get('planning')
-    .get('memories')
-    .map(
-      ({ name, content }) => `\
-<memory name="${name}">
-${content}
-</memory>`,
-    )
-    .join('\n');
-
   const currentTasks = state
     .get('planning')
     .get('tasks')
@@ -116,9 +105,7 @@ When processing a request:
 <context>
 ${state.get('thinking').parseToPromptText(['environment', 'personality', 'memories', 'tools'])}
 
-<memories>
-${memories}
-</memories>
+${state.get('planning').parseToPromptText(['memories'])}
 
 <available_tools>
 ${availableTools}
@@ -131,7 +118,7 @@ ${currentTasks}
 };
 
 export const generateTaskStepsPrompt = (state: State): string => {
-  const tools = state
+  const availableTools = state
     .get('config')
     .get('tools')
     .map(
@@ -151,17 +138,6 @@ ${action.description}
     )
     .join('\n');
 
-  const memories = state
-    .get('planning')
-    .get('memories')
-    .map(
-      ({ name, content }) => `\
-<memory name="${name}">
-${content}
-</memory>`,
-    )
-    .join('\n');
-
   const tasks = state
     .get('planning')
     .get('tasks')
@@ -173,7 +149,7 @@ ${description}
     )
     .join('\n');
 
-  const { task } = state.get('execution').get('current');
+  const task = state.get('execution').get('task');
   const currentTask = task
     ? `\
 <task name="${task.name}" status="${task.status}">
@@ -204,7 +180,7 @@ Create an ordered sequence of steps, using available tools and their actions, to
 <prompt_examples>
 USER: Play my workout playlist and start tracking my exercise
 AI: {
-  "_thinking": "Current task is to play workout playlist. While we have tools for both music and exercise tracking, focusing strictly on current_task of playing music.",
+  "_thinking": "Current task is to play workout playlist. While we have available tools for both music and exercise tracking, focusing strictly on current_task of playing music.",
   "result": [
     {
       "id": null,
@@ -251,13 +227,11 @@ AI: {
 <context>
 ${state.get('thinking').parseToPromptText(['environment', 'personality', 'tools', 'memories'])}
 
-<tools>
-${tools}
-</tools>
+<available_tools>
+${availableTools}
+</available_tools>
 
-<memories>
-${memories}
-</memories>
+${state.get('planning').parseToPromptText(['memories'])}
 
 <tasks>
 ${tasks}

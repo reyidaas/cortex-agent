@@ -105,3 +105,7 @@ ${state.get('thinking').parseToPromptText(['environment', 'personality'])}
 </context>\
 `;
 };
+
+export const generateToolPayloadPrompt = (): string => {
+  return ``;
+};
