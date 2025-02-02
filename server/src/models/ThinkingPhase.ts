@@ -67,8 +67,7 @@ export class ThinkingPhase extends GetterSetter<ThinkingState> {
     return `\
 <environment>
 ${environment}
-</environment>\
-`;
+</environment>`;
   }
 
   private parsePersonalityToPromptText(): string {
@@ -77,8 +76,7 @@ ${environment}
     return `\
 <personality>
 ${personality}
-</personality>\
-`;
+</personality>`;
   }
 
   private parseToolsToPromptText(): string {
@@ -87,16 +85,14 @@ ${personality}
         ({ tool, query }) => `\
 <tool name="${tool}">
 ${query}
-</tool>\
-`,
+</tool>`,
       )
       .join('\n');
 
     return `\
 <initial_thoughts_about_needed_tools>
 ${tools}
-</initial_thoughts_about_needed_tools>\
-`;
+</initial_thoughts_about_needed_tools>`;
   }
 
   private parseMemoryCategoriesToPromptText(): string {
@@ -105,16 +101,14 @@ ${tools}
         ({ category, query }) => `\
 <memory_category name="${category}">
 ${query}
-</memory_category>\
-`,
+</memory_category>`,
       )
       .join('\n');
 
     return `\
 <initial_thoughts_about_needed_memory_categories>
 ${memoryCategories}
-</initial_thoughts_about_needed_memory_categories>\
-`;
+</initial_thoughts_about_needed_memory_categories>`;
   }
 
   async extractEnvironment(message: string, state: State): Promise<string | null> {

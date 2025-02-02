@@ -1,20 +1,15 @@
-import type { Tool } from '@/prompts/tools';
 import type { State } from '@/models/State';
-import type { Task } from '@/models/Task';
 
-export type GeneratedTask = Pick<Task, 'name' | 'description' | 'status'> & {
-  id: string | null;
-};
-
-export const generateOrUpdateTasksPrompt = (tools: Tool[], state: State): string => {
+export const generateOrUpdateTasksPrompt = (state: State): string => {
   const availableTools =
-    tools
+    state
+      .get('config')
+      .get('tools')
       .map(
         ({ name, description }) => `\
 <tool name="${name}">
 ${description}
-</tool>\
-`,
+</tool>`,
       )
       .join('\n') ?? '';
 
@@ -25,8 +20,7 @@ ${description}
       ({ name, content }) => `\
 <memory name="${name}">
 ${content}
-</memory>\
-`,
+</memory>`,
     )
     .join('\n');
 
@@ -39,8 +33,7 @@ ${content}
 <description>
 ${description}
 </description>
-</task>\
-`,
+</task>`,
     )
     .join('\n');
 
@@ -134,6 +127,158 @@ ${availableTools}
 <current_tasks>
 ${currentTasks}
 </current_tasks>
-</context>\
+</context>`;
+};
+
+export const generateTaskStepsPrompt = (state: State): string => {
+  const tools = state
+    .get('config')
+    .get('tools')
+    .map(
+      ({ name, description, actions }) => `\
+<tool name="${name}" description="${description}">
+<actions>
+${actions
+  .map(
+    (action) => `\
+<action name="${action.name}">
+${action.description}
+</action>`,
+  )
+  .join('\n')}
+</actions>
+</tool>`,
+    )
+    .join('\n');
+
+  const memories = state
+    .get('planning')
+    .get('memories')
+    .map(
+      ({ name, content }) => `\
+<memory name="${name}">
+${content}
+</memory>`,
+    )
+    .join('\n');
+
+  const tasks = state
+    .get('planning')
+    .get('tasks')
+    .map(
+      ({ name, description, status }) => `\
+<task name="${name}" status="${status}">
+${description}
+</task>`,
+    )
+    .join('\n');
+
+  const { task } = state.get('execution').get('current');
+  const currentTask = task
+    ? `\
+<task name="${task.name}" status="${task.status}">
+${task.description}
+</task>`
+    : '';
+
+  return `\
+Generate precise, actionable steps to complete a specific current_task using available tools and context information.
+
+<prompt_objective>
+Create an ordered sequence of steps, using available tools and their actions, to complete ONLY the current_task while considering all provided context information.
+</prompt_objective>
+
+<prompt_rules>
+- MUST ONLY generate steps for completing the current_task, even if tools are available for the entire user request
+- MUST NEVER create steps using tools or actions that aren't provided in the context
+- MUST ALWAYS return response in valid JSON format with _thinking and result fields
+- MUST set id to null and status to "pending" for all steps
+- MUST use dashes instead of spaces in step names
+- MUST provide comprehensive reasoning in _thinking field
+- MUST return empty result array if no suitable tools are available
+- WHEN multiple tools are available, choose the most specific one
+- MUST check provided memories first before generating steps
+- MUST consider personality and environment context when relevant
+</prompt_rules>
+
+<prompt_examples>
+USER: Play my workout playlist and start tracking my exercise
+AI: {
+  "_thinking": "Current task is to play workout playlist. While we have tools for both music and exercise tracking, focusing strictly on current_task of playing music.",
+  "result": [
+    {
+      "id": null,
+      "status": "pending",
+      "name": "play-workout-music",
+      "description": "Start playing the workout playlist",
+      "tool": "music-player",
+      "action": "play"
+    }
+  ]
+}
+
+USER: What's on my schedule for tomorrow?
+AI: {
+  "_thinking": "Need to check calendar for tomorrow's events. Single step using calendar search is sufficient.",
+  "result": [
+    {
+      "id": null,
+      "status": "pending",
+      "name": "get-tomorrow-schedule",
+      "description": "Retrieve all scheduled events for tomorrow",
+      "tool": "calendar",
+      "action": "search"
+    }
+  ]
+}
+
+USER: Order groceries and set a reminder for pickup
+AI: {
+  "_thinking": "Current task is only to order groceries. Even though we could set a reminder, we focus solely on the grocery ordering task.",
+  "result": [
+    {
+      "id": null,
+      "status": "pending",
+      "name": "place-grocery-order",
+      "description": "Submit grocery order through the shopping service",
+      "tool": "shopping",
+      "action": "order"
+    }
+  ]
+}
+</prompt_examples>
+
+<context>
+${state.get('thinking').parseToPromptText(['environment', 'personality', 'tools', 'memories'])}
+
+<tools>
+${tools}
+</tools>
+
+<memories>
+${memories}
+</memories>
+
+<tasks>
+${tasks}
+</tasks>
+
+<current_task>
+${currentTask}
+</current_task>
+</context>
+
+Process task by:
+1. Focus ONLY on current_task from provided context
+2. Review context (memories, personality, environment, tools)
+3. Match task requirements with available tools and actions
+4. Generate minimal required steps ensuring:
+   - Valid tool-action combinations
+   - Dashed step names
+   - null id and "pending" status
+   - Clear descriptions
+5. Return JSON with:
+   - Reasoning in _thinking
+   - Ordered steps in result array (or empty if no suitable tools)\
 `;
 };

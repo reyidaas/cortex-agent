@@ -5,6 +5,7 @@ export const runAgent = async (userId: string, message: string): Promise<string>
 
   await agent.think();
   await agent.plan();
+  await agent.execute();
 
   return '';
 };

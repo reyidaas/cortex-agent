@@ -1,6 +1,6 @@
 import { z } from 'zod';
 
-import { generateOrUpdateTasksPrompt, type GeneratedTask } from '@/prompts/tasks';
+import { generateOrUpdateTasksPrompt } from '@/prompts/tasks';
 import { getStructuredCompletion } from '@/util/openai';
 import { generateResultWithReasoningSchema } from '@/schema/common';
 import { State } from '@/models/State';
@@ -13,13 +13,16 @@ interface PlanningState {
   memories: Memory[];
 }
 
+type GeneratedTask = Pick<Task, 'name' | 'description' | 'status'> & {
+  id: string | null;
+};
+
 export class PlanningPhase extends GetterSetter<PlanningState> {
   constructor() {
     super({ tasks: [], memories: [] });
   }
 
   async generateOrUpdateTasks(message: string, state: State): Promise<Task[]> {
-    const tools = state.get('config').get('tools');
     const schema = generateResultWithReasoningSchema(
       z.array(
         z.object({
@@ -34,7 +37,7 @@ export class PlanningPhase extends GetterSetter<PlanningState> {
     const response = await getStructuredCompletion({
       schema,
       name: 'generate-or-update-tasks',
-      system: generateOrUpdateTasksPrompt(tools, state),
+      system: generateOrUpdateTasksPrompt(state),
       message,
     });
     console.log('GENERATE OR UPDATE TASKS', response);

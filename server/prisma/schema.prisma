@@ -27,19 +27,20 @@ model Tool {
   id          String   @id @default(uuid())
   name        String   @unique
   description String   @unique
-  instruction String   @unique
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
   actions     Action[]
 }
 
 model Action {
-  id        String   @id @default(uuid())
-  name      String   @unique
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  toolId    String
-  tool      Tool     @relation(fields: [toolId], references: [id], onDelete: Cascade)
+  id          String   @id @default(uuid())
+  name        String
+  description String
+  instruction String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  toolId      String
+  tool        Tool     @relation(fields: [toolId], references: [id], onDelete: Cascade)
 }
 
 model Memory {

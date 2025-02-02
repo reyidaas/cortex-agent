@@ -29,7 +29,13 @@ export class Config extends GetterSetter<ConfigState> {
       getUserOrThrow(userId, {
         include: { environment: true, personality: true },
       }),
-      getTools({ select: { name: true, description: true } }),
+      getTools({
+        select: {
+          name: true,
+          description: true,
+          actions: { select: { name: true, description: true } },
+        },
+      }),
       getMemoryCategories({
         select: { name: true, description: true },
       }),

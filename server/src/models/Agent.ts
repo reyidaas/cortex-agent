@@ -35,7 +35,22 @@ export class Agent {
     this.state.get('execution').set('current', { task: nextTask, step: null });
   }
 
-  async execute(): Promise<void> {}
+  async execute(): Promise<void> {
+    const { task } = this.state.get('execution').get('current');
+    if (!task) {
+      throw new StatusError('There is no task to execute');
+    }
+
+    const steps = await this.state
+      .get('execution')
+      .generateCurrentTaskSteps(this.message, this.state);
+    const nextStep = steps.find(({ status }) => status === 'pending');
+    if (!nextStep) {
+      throw new StatusError('There is no next step to execute');
+    }
+
+    this.state.get('execution').set('current', (current) => ({ ...current, step: nextStep }));
+  }
 
   static async new(userId: string, message: string) {
     const config = await Config.new(userId);

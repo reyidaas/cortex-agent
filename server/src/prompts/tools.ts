@@ -1,9 +1,11 @@
-import type { Tool as PrismaTool } from '@prisma/client';
+import type { Tool as PrismaTool, Action } from '@prisma/client';
 
 import type { State } from '@/models/State';
 
 // TODO: tools - move this elsewhere later
-export type Tool = Pick<PrismaTool, 'name' | 'description'>;
+export type Tool = Pick<PrismaTool, 'name' | 'description'> & {
+  actions: Pick<Action, 'name' | 'description'>[];
+};
 
 export const generateToolsQueriesPrompt = (tools: Tool[], state: State): string => {
   const parsedTools = tools
