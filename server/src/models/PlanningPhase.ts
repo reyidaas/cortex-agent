@@ -59,7 +59,7 @@ ${memories}
 `;
   }
 
-  async generateOrUpdateTasks(message: string, state: State): Promise<Task[]> {
+  async generateOrUpdateTasks(message: string, state: State): Promise<GeneratedTask[]> {
     const schema = generateResultWithReasoningSchema(
       z.array(
         z.object({
@@ -79,13 +79,10 @@ ${memories}
     });
     console.log('GENERATE OR UPDATE TASKS', response);
 
-    const generatedTasks = response?.result ?? [];
-    this.updateTasks(generatedTasks);
-
-    return this.get('tasks');
+    return response?.result ?? [];
   }
 
-  private updateTasks(tasks: GeneratedTask[]) {
+  updateTasks(tasks: GeneratedTask[]) {
     this.set('tasks', (currentTasks) =>
       tasks.map(({ id, name, description }) => {
         const existingTask = id && currentTasks.find((task) => id === task.id);

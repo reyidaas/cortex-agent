@@ -127,10 +127,7 @@ ${memoryCategories}
     });
     console.log('ENV', response);
 
-    const extractedEnvironment = response && response.result;
-    this.set('environment', extractedEnvironment);
-
-    return extractedEnvironment;
+    return response && response.result;
   }
 
   async extractPersonality(message: string, state: State): Promise<string | null> {
@@ -149,10 +146,7 @@ ${memoryCategories}
     });
     console.log('PERS', response);
 
-    const extractedPersonality = response && response.result;
-    this.set('personality', extractedPersonality);
-
-    return extractedPersonality;
+    return response && response.result;
   }
 
   async generateToolsQueries(message: string, state: State): Promise<ToolQuery[] | null> {
@@ -175,10 +169,7 @@ ${memoryCategories}
     });
     console.log('TOOLS', response);
 
-    const toolsQueries = response && response.result;
-    this.set('tools', toolsQueries);
-
-    return toolsQueries;
+    return response && response.result;
   }
 
   async generateMemoryCategoriesQueries(
@@ -205,9 +196,6 @@ ${memoryCategories}
     });
     console.log('MEMORY CATEGORIES', response);
 
-    const memoryCategoriesQueries = response && response.result;
-    this.set('memories', memoryCategoriesQueries);
-
-    return memoryCategoriesQueries;
+    return response && response.result;
   }
 }

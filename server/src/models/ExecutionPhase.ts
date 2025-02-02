@@ -7,23 +7,26 @@ import { hasPropertyOfType } from '@/util/types';
 import { generateResultWithReasoningSchema } from '@/schema/common';
 import { GetterSetter } from '@/models/GetterSetter';
 import { StatusError } from '@/models/StatusError';
+import { TaskStep } from '@/models/TaskStep';
+import { tools } from '@/tools';
+import { Tool } from '@/models/Tool';
 import type { Task } from '@/models/Task';
 import type { State } from '@/models/State';
-import { TaskStep } from '@/models/TaskStep';
 
 interface ExecutionState {
   task: Task | null;
   step: TaskStep | null;
+  payload: unknown;
 }
 
-// type GeneratedTaskStep = Pick<TaskStep, 'name' | 'description' | 'tool' | 'action'>;
+type GeneratedTaskStep = Pick<TaskStep, 'name' | 'description' | 'tool' | 'action'>;
 
 export class ExecutionPhase extends GetterSetter<ExecutionState> {
   constructor() {
-    super({ task: null, step: null });
+    super({ task: null, step: null, payload: null });
   }
 
-  async generateCurrentTaskSteps(message: string, state: State): Promise<TaskStep[]> {
+  async generateCurrentTaskSteps(message: string, state: State): Promise<GeneratedTaskStep[]> {
     const schema = generateResultWithReasoningSchema(
       z.array(
         z.object({
@@ -45,10 +48,7 @@ export class ExecutionPhase extends GetterSetter<ExecutionState> {
     });
     console.log('GENERATE TASK STEPS', response);
 
-    const steps = response?.result ?? [];
-    this.get('task')!.update({ steps: steps.map((step) => new TaskStep(step)) });
-
-    return this.get('task')!.steps;
+    return response?.result ?? [];
   }
 
   async generateToolPayload(message: string, state: State): Promise<unknown> {
@@ -81,5 +81,37 @@ export class ExecutionPhase extends GetterSetter<ExecutionState> {
     }
 
     return response.result;
+  }
+
+  async useTool(): Promise<unknown> {
+    const step = this.get('step');
+    if (!step) {
+      throw new StatusError("Can't use tool - no current step");
+    }
+
+    console.log('STEP', step);
+    if (!Tool.isValidToolName(step.tool)) {
+      throw new StatusError("Can't use tool - invalid tool name in current step");
+    }
+    const SelectedTool = tools[step.tool];
+    const toolInstance = new SelectedTool();
+
+    if (!toolInstance.validateActionName(step.action)) {
+      throw new StatusError("Can't use tool - invalid action name in current step");
+    }
+
+    // @ts-ignore
+    const SelectedAction = toolInstance.getAction(step.action);
+    const actionInstance = new SelectedAction();
+
+    const payload = this.get('payload');
+    if (!actionInstance.validatePayload(payload)) {
+      throw new StatusError("Can't use tool - invalid action payload");
+    }
+
+    const result = await actionInstance.execute(payload);
+    console.log('ACTION RESULT', result);
+
+    return result;
   }
 }

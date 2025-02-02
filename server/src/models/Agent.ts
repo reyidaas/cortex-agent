@@ -1,6 +1,7 @@
 import { State } from '@/models/State';
 import { Config } from '@/models/Config';
-import { StatusError } from './StatusError';
+import { TaskStep } from '@/models/TaskStep';
+import { StatusError } from '@/models/StatusError';
 
 export class Agent {
   state: State;
@@ -14,20 +15,33 @@ export class Agent {
   }
 
   async think(): Promise<void> {
-    await Promise.all([
+    const [environment, personality] = await Promise.all([
       this.state.get('thinking').extractEnvironment(this.message, this.state),
       this.state.get('thinking').extractPersonality(this.message, this.state),
     ]);
 
-    await Promise.all([
+    this.state.get('thinking').set('environment', environment);
+    this.state.get('thinking').set('personality', personality);
+
+    const [tools, memoriesCategories] = await Promise.all([
       this.state.get('thinking').generateToolsQueries(this.message, this.state),
       this.state.get('thinking').generateMemoryCategoriesQueries(this.message, this.state),
     ]);
+
+    this.state.get('thinking').set('tools', tools);
+    this.state.get('thinking').set('memories', memoriesCategories);
   }
 
   async plan(): Promise<void> {
-    const tasks = await this.state.get('planning').generateOrUpdateTasks(this.message, this.state);
-    const nextTask = tasks.find(({ status }) => status === 'pending');
+    const generatedTasks = await this.state
+      .get('planning')
+      .generateOrUpdateTasks(this.message, this.state);
+    this.state.get('planning').updateTasks(generatedTasks);
+
+    const nextTask = this.state
+      .get('planning')
+      .get('tasks')
+      .find(({ status }) => status === 'pending');
     if (!nextTask) {
       throw new StatusError('No next task was found');
     }
@@ -42,9 +56,12 @@ export class Agent {
       throw new StatusError('There is no task to execute');
     }
 
-    const steps = await this.state
+    const generatedSteps = await this.state
       .get('execution')
       .generateCurrentTaskSteps(this.message, this.state);
+    const steps = generatedSteps.map((step) => new TaskStep(step));
+    task.update({ steps });
+
     const nextStep = steps.find(({ status }) => status === 'pending');
     if (!nextStep) {
       throw new StatusError('There is no next step to execute');
@@ -52,7 +69,10 @@ export class Agent {
 
     this.state.get('execution').set('step', nextStep);
 
-    await this.state.get('execution').generateToolPayload(this.message, this.state);
+    const payload = await this.state.get('execution').generateToolPayload(this.message, this.state);
+    this.state.get('execution').set('payload', payload);
+
+    await this.state.get('execution').useTool();
   }
 
   static async new(userId: string, message: string) {

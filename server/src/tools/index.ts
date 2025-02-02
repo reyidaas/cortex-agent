@@ -1,9 +1,7 @@
 import { FinalAnswer } from './FinalAnswer';
-import { WebSearch } from './WebSearch';
+import { Web } from './Web';
 
 export const tools = {
-  finalAnswer: FinalAnswer,
-  webSearch: WebSearch,
+  'final-answer': FinalAnswer,
+  'web': Web,
 };
-
-export type ToolName = keyof typeof tools;

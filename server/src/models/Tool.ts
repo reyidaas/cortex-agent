@@ -1,22 +1,21 @@
-import type { ToolName } from '@/tools';
+import { tools } from '@/tools';
 
-// TODO: tool - unimplemented
 interface ToolArgs {
-  name: ToolName;
-  description: string;
-  instruction: string;
+  name: keyof typeof tools;
 }
 
-export abstract class Tool {
-  name: ToolName;
-  description: string;
-  instruction: string;
+export abstract class Tool<T extends object> {
+  name: keyof typeof tools;
 
-  constructor({ name, description, instruction }: ToolArgs) {
+  constructor({ name }: ToolArgs) {
     this.name = name;
-    this.description = description;
-    this.instruction = instruction;
   }
 
-  abstract execute(): void;
+  abstract validateActionName(actionName: unknown): actionName is keyof T;
+
+  abstract getAction<U extends keyof T>(actionName: U): T[U];
+
+  static isValidToolName(toolName: string): toolName is keyof typeof tools {
+    return Object.keys(tools).includes(toolName);
+  }
 }
