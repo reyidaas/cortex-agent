@@ -1,4 +1,5 @@
 import { Action } from '@/models/Action';
+import { Document } from '@/models/Document';
 
 interface Payload {
   queries: string[];
@@ -11,9 +12,8 @@ export class WebSearch extends Action<Payload> {
     });
   }
 
-  override async execute(payload: Payload): Promise<string[]> {
-    console.log('EXECTUTING WEB SEARCH', payload);
-    return payload.queries;
+  override async execute(payload: Payload): Promise<Document<'text'>> {
+    return new Document('text', { text: payload.queries.join(', ') });
   }
 
   override validatePayload(payload: unknown): payload is Payload {

@@ -1,4 +1,5 @@
 import { Action } from '@/models/Action';
+import { Document } from '@/models/Document';
 
 interface Payload {
   answer: string;
@@ -15,8 +16,7 @@ export class FinalAnswerText extends Action<Payload> {
     return true;
   }
 
-  override async execute(payload: Payload): Promise<string> {
-    console.log('EXECUTING FINAL ANSWER TEXT', payload);
-    return payload.answer;
+  override async execute(payload: Payload): Promise<Document<'text'>> {
+    return new Document('text', { text: payload.answer });
   }
 }

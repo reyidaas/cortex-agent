@@ -1,3 +1,5 @@
+import type { Document } from '@/models/Document';
+
 interface ActionArgs {
   name: string;
 }
@@ -9,7 +11,7 @@ export abstract class Action<T> {
     this.name = name;
   }
 
-  abstract execute(payload: T): Promise<unknown>;
+  abstract execute(payload: T): Promise<Document<any>>;
 
   abstract validatePayload(payload: unknown): payload is T;
 }
