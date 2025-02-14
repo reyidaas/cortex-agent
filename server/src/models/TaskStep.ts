@@ -1,5 +1,7 @@
 import { randomUUID } from 'crypto';
 import type { TaskStatus } from '@/models/Task';
+import type { Document, DocumentType } from '@/models/Document';
+import type { ToolName } from '@/tools';
 
 type UpdateObject = {
   [Key in keyof Omit<TaskStep, 'update'>]?: TaskStep[Key];
@@ -10,8 +12,9 @@ export class TaskStep {
   name: string;
   description: string;
   status: TaskStatus;
-  tool: string;
+  tool: ToolName;
   action: string;
+  result: Document<DocumentType> | null;
   createdAt: Date;
   updatedAt: Date;
 
@@ -27,6 +30,7 @@ export class TaskStep {
     this.status = 'pending';
     this.tool = tool;
     this.action = action;
+    this.result = null;
     this.createdAt = new Date();
     this.updatedAt = new Date();
   }

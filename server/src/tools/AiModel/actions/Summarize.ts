@@ -3,19 +3,19 @@ import { Document } from '@/models/Document';
 import { hasPropertyOfType } from '@/util/types';
 
 interface Payload {
-  answer: string;
+  text: string;
 }
 
-export class FinalAnswerText extends Action<Payload> {
+export class AiModelSummarize extends Action<Payload> {
   constructor() {
-    super({ name: 'text' });
+    super({ name: 'summarize' });
   }
 
   override validatePayload(payload: unknown): payload is Payload {
-    return hasPropertyOfType('answer', 'string')(payload);
+    return hasPropertyOfType('text', 'string')(payload);
   }
 
   override async execute(payload: Payload): Promise<Document<'text'>> {
-    return new Document('text', { text: payload.answer });
+    return new Document('text', { text: `Summarized text: ${payload.text}` });
   }
 }

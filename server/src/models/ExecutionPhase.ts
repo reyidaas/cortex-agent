@@ -8,6 +8,7 @@ import { generateResultWithReasoningSchema } from '@/schema/common';
 import { GetterSetter } from '@/models/GetterSetter';
 import { StatusError } from '@/models/StatusError';
 import { TaskStep } from '@/models/TaskStep';
+import { Document, type DocumentType } from '@/models/Document';
 import { tools } from '@/tools';
 import { Tool } from '@/models/Tool';
 import type { Task } from '@/models/Task';
@@ -34,7 +35,7 @@ export class ExecutionPhase extends GetterSetter<ExecutionState> {
           status: z.literal('pending'),
           name: z.string(),
           description: z.string(),
-          tool: z.string(),
+          tool: z.enum(Object.keys(tools) as [string, ...string[]]),
           action: z.string(),
         }),
       ),
@@ -48,7 +49,7 @@ export class ExecutionPhase extends GetterSetter<ExecutionState> {
     });
     console.log('GENERATE TASK STEPS', response);
 
-    return response?.result ?? [];
+    return response?.result as GeneratedTaskStep[] ?? [];
   }
 
   async generateToolPayload(message: string, state: State): Promise<unknown> {
@@ -83,7 +84,7 @@ export class ExecutionPhase extends GetterSetter<ExecutionState> {
     return response.result;
   }
 
-  async useTool(): Promise<unknown> {
+  async useTool<T extends DocumentType>(): Promise<Document<T>> {
     const step = this.get('step');
     if (!step) {
       throw new StatusError("Can't use tool - no current step");

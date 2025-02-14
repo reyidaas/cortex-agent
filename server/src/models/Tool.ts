@@ -1,21 +1,28 @@
-import { tools } from '@/tools';
+import { tools, type ToolName } from '@/tools';
 
-interface ToolArgs {
-  name: keyof typeof tools;
+interface ToolArgs<T extends object> {
+  name: ToolName;
+  actions: T;
 }
 
 export abstract class Tool<T extends object> {
-  name: keyof typeof tools;
+  name: ToolName;
+  actions: T;
 
-  constructor({ name }: ToolArgs) {
+  constructor({ name, actions }: ToolArgs<T>) {
     this.name = name;
+    this.actions = actions;
   }
 
-  abstract validateActionName(actionName: unknown): actionName is keyof T;
+  validateActionName(actionName: unknown): actionName is keyof T {
+    return typeof actionName === 'string' && actionName in this.actions;
+  }
 
-  abstract getAction<U extends keyof T>(actionName: U): T[U];
+  getAction<U extends keyof T>(actionName: U): T[U] {
+    return this.actions[actionName];
+  }
 
-  static isValidToolName(toolName: string): toolName is keyof typeof tools {
+  static isValidToolName(toolName: string): toolName is ToolName {
     return Object.keys(tools).includes(toolName);
   }
 }

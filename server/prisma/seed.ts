@@ -93,9 +93,9 @@ const TOOLS = [
     actions: {
       create: [
         {
-          name: 'text',
-          description: 'Use this action to generate text.',
-          instruction: '{"text": "the text for ai model request"}',
+          name: 'summarize',
+          description: 'Use this action to create summaries.',
+          instruction: '{"text": "the text to be summarized"}',
         },
       ],
     },

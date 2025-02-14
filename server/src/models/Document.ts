@@ -1,10 +1,12 @@
 import { randomUUID } from 'crypto';
 
 interface DocumentTypeToValueMap {
-  'text': { text: string };
+  text: { text: string };
 }
 
-export class Document<T extends keyof DocumentTypeToValueMap> {
+export type DocumentType = keyof DocumentTypeToValueMap;
+
+export class Document<T extends DocumentType> {
   id: string;
   type: T;
   value: DocumentTypeToValueMap[T];

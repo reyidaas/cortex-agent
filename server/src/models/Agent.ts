@@ -37,7 +37,9 @@ export class Agent {
       .get('planning')
       .generateOrUpdateTasks(this.message, this.state);
     this.state.get('planning').updateTasks(generatedTasks);
+  }
 
+  async execute(): Promise<void> {
     const nextTask = this.state
       .get('planning')
       .get('tasks')
@@ -47,35 +49,35 @@ export class Agent {
     }
 
     this.state.get('execution').set('task', nextTask);
-    this.state.get('execution').set('step', null);
-  }
-
-  async execute(): Promise<void> {
-    const task = this.state.get('execution').get('task');
-    if (!task) {
-      throw new StatusError('There is no task to execute');
-    }
 
     const generatedSteps = await this.state
       .get('execution')
       .generateCurrentTaskSteps(this.message, this.state);
     const steps = generatedSteps.map((step) => new TaskStep(step));
-    task.update({ steps });
+    nextTask.update({ steps });
 
-    const nextStep = steps.find(({ status }) => status === 'pending');
-    if (!nextStep) {
-      throw new StatusError('There is no next step to execute');
+    for (const step of nextTask.steps) {
+      this.state.get('execution').set('step', step);
+
+      const payload = await this.state
+        .get('execution')
+        .generateToolPayload(this.message, this.state);
+      this.state.get('execution').set('payload', payload);
+
+      const result = await this.state.get('execution').useTool();
+      step.update({ status: 'completed' });
+      step.update({ result });
+
+      if (step.tool === 'final-answer') {
+        nextTask.update({ final: true });
+        break;
+      }
     }
 
-    this.state.get('execution').set('step', nextStep);
-
-    const payload = await this.state.get('execution').generateToolPayload(this.message, this.state);
-    this.state.get('execution').set('payload', payload);
-
-    await this.state.get('execution').useTool();
+    nextTask.update({ status: 'completed' });
   }
 
-  static async new(userId: string, message: string) {
+  static async new(userId: string, message: string): Promise<Agent> {
     const config = await Config.new(userId);
     return new Agent(userId, message, config);
   }
