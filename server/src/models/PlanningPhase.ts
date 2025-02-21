@@ -2,6 +2,7 @@ import { z } from 'zod';
 
 import { generateOrUpdateTasksPrompt } from '@/prompts/tasks';
 import { getStructuredCompletion } from '@/util/openai';
+import { withPromptLog } from '@/util/logging';
 import { generateResultWithReasoningSchema } from '@/schema/common';
 import { State } from '@/models/State';
 import { Task } from '@/models/Task';
@@ -55,8 +56,7 @@ ${content}
     return `\
 <memories>
 ${memories}
-</memories>
-`;
+</memories>`;
   }
 
   async generateOrUpdateTasks(message: string, state: State): Promise<GeneratedTask[]> {
@@ -74,7 +74,11 @@ ${memories}
     const response = await getStructuredCompletion({
       schema,
       name: 'generate-or-update-tasks',
-      system: generateOrUpdateTasksPrompt(state),
+      system: await withPromptLog(
+        state,
+        'GENERATE OR UPDATE TASKS',
+        generateOrUpdateTasksPrompt(state),
+      ),
       message,
     });
     console.log('GENERATE OR UPDATE TASKS', response);

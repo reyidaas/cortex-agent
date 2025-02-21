@@ -213,15 +213,13 @@ ${step.result.value.text}
 </result>`
     : ''
 }
-</step>
-`,
+</step>`,
   )
   .join('\n')}
 </steps>`
     : ''
 }
-</task>
-`,
+</task>`,
   )
   .join('\n')}
 </tasks>

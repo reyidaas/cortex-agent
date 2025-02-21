@@ -5,6 +5,7 @@ import { extractPersonalityPrompt } from '@/prompts/personality';
 import { generateToolsQueriesPrompt } from '@/prompts/tools';
 import { generateMemoryCategoriesQueriesPrompt } from '@/prompts/memories';
 import { getStructuredCompletion } from '@/util/openai';
+import { withPromptLog } from '@/util/logging';
 import { generateResultWithReasoningSchema } from '@/schema/common';
 import { GetterSetter } from '@/models/GetterSetter';
 import { State } from '@/models/State';
@@ -122,7 +123,7 @@ ${memoryCategories}
     const response = await getStructuredCompletion({
       schema,
       name: 'extract-environment',
-      system: extractEnvironmentPrompt(environment),
+      system: await withPromptLog(state, 'ENV', extractEnvironmentPrompt(environment)),
       message,
     });
     console.log('ENV', response);
@@ -141,7 +142,7 @@ ${memoryCategories}
     const response = await getStructuredCompletion({
       schema,
       name: 'extract-personality',
-      system: extractPersonalityPrompt(personality),
+      system: await withPromptLog(state, 'PERS', extractPersonalityPrompt(personality)),
       message,
     });
     console.log('PERS', response);
@@ -164,7 +165,7 @@ ${memoryCategories}
     const response = await getStructuredCompletion({
       schema,
       name: 'generate-tools-queries',
-      system: generateToolsQueriesPrompt(tools, state),
+      system: await withPromptLog(state, 'TOOLS', generateToolsQueriesPrompt(tools, state)),
       message,
     });
     console.log('TOOLS', response);
@@ -191,7 +192,11 @@ ${memoryCategories}
     const response = await getStructuredCompletion({
       schema,
       name: 'generate-memory-categories-queries',
-      system: generateMemoryCategoriesQueriesPrompt(memoryCategories, state),
+      system: await withPromptLog(
+        state,
+        'MEMORY CATEGORIES',
+        generateMemoryCategoriesQueriesPrompt(memoryCategories, state),
+      ),
       message,
     });
     console.log('MEMORY CATEGORIES', response);

@@ -12,6 +12,7 @@ interface ConfigState {
   personality: Personality | null;
   tools: Tool[];
   memoryCategories: MemoryCategory[];
+  requestId: number;
 }
 
 export class Config extends GetterSetter<ConfigState> {
@@ -21,7 +22,7 @@ export class Config extends GetterSetter<ConfigState> {
     tools: Tool[],
     memoryCategories: MemoryCategory[],
   ) {
-    super({ environment, personality, tools, memoryCategories });
+    super({ environment, personality, tools, memoryCategories, requestId: Date.now() });
   }
 
   static async new(userId: string): Promise<Config> {
