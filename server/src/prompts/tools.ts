@@ -11,10 +11,7 @@ export const generateToolsQueriesPrompt = (tools: Tool[], state: State): string 
   const parsedTools = tools
     .map(
       ({ name, description }) => `\
-<tool name="${name}">
-${description}
-</tool>\
-`,
+<tool name="${name}" description="${description}"/>`,
     )
     .join('\n');
 
@@ -113,8 +110,10 @@ export const generateToolPayloadPrompt = (state: State): string => {
       .get('config')
       .get('tools')
       .find(({ name }) => toolName === name) ?? '';
-  const action = tool && tool.actions.find(({ name }) => name === actionName);
-  const step = state.get('execution').get('step') ?? '';
+  const action = tool && (tool.actions.find(({ name }) => name === actionName) ?? '');
+  const tasks = state.get('planning').get('tasks');
+  const currentTask = state.get('execution').get('task') ?? '';
+  const currentStep = state.get('execution').get('step') ?? '';
 
   return `\
 <prompt_objective>
@@ -131,10 +130,11 @@ Generate a JSON payload that strictly follows the provided payload_structure, us
 - USE context data in the following priority order:
   1. payload_structure (structure definition)
   2. user message (current request)
-  3. current_task (current context)
-  4. memories (historical context)
-  5. environment (situational context)
-  6. personality (general context)
+  3. tasks (current context)
+  4. current_step (current context)
+  5. memories (historical context)
+  6. environment (situational context)
+  7. personality (general context)
 - When no relevant context exists for a required field, use appropriate default values and explain in "_thinking"
 </prompt_rules>
 
@@ -187,22 +187,51 @@ ${
   action &&
   `\
 <tool name="${tool.name}" description="${tool.description}">
-<action name="${action.name}">
-${action.description}
-</action>
+<action name="${action.name}" description="${action.description}"/>
 </tool>`
 }
 </selected_tool>
 
-<current_task>
+<tasks>
+${tasks
+  .map(
+    ({ name, description, status, steps }) => `\
+<task name="${name} status="${status}" description="${description}">
 ${
-  step &&
-  `\
-<task name="${step.name}" status="${step.status}">
-${step.description}
-</task>`
+  steps.length
+    ? `\
+<steps>
+${steps
+  .map(
+    (step) => `\
+<step name="${step.name} status="${step.status}" description="${step.description}">
+${
+  step.result
+    ? `\
+<result>
+${step.result.value.text}
+</result>`
+    : ''
 }
-</current_task>
+</step>
+`,
+  )
+  .join('\n')}
+</steps>`
+    : ''
+}
+</task>
+`,
+  )
+  .join('\n')}
+</tasks>
+
+${
+  currentTask &&
+  currentStep &&
+  `\
+<current_step task_name="${currentTask.name}" name="${currentStep.name}" status="${currentStep.status}" description="${currentStep.description}"/>`
+}
 
 <payload_structure>
 ${action && action.instruction}

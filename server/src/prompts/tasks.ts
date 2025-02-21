@@ -1,28 +1,21 @@
 import type { State } from '@/models/State';
 
 export const generateOrUpdateTasksPrompt = (state: State): string => {
-  const availableTools =
-    state
-      .get('config')
-      .get('tools')
-      .map(
-        ({ name, description }) => `\
-<tool name="${name}">
-${description}
-</tool>`,
-      )
-      .join('\n') ?? '';
+  const availableTools = state
+    .get('config')
+    .get('tools')
+    .map(
+      ({ name, description }) => `\
+<tool name="${name}" description="${description}"/>`,
+    )
+    .join('\n');
 
   const currentTasks = state
     .get('planning')
     .get('tasks')
     .map(
       ({ id, name, description, status }) => `\
-<task id="${id}" name="${name}" status="${status}">
-<description>
-${description}
-</description>
-</task>`,
+<task id="${id}" name="${name}" status="${status}" description="${description}"/>`,
     )
     .join('\n');
 
@@ -128,9 +121,7 @@ export const generateTaskStepsPrompt = (state: State): string => {
 ${actions
   .map(
     (action) => `\
-<action name="${action.name}">
-${action.description}
-</action>`,
+<action name="${action.name}" description="${action.description}"/>`,
   )
   .join('\n')}
 </actions>
@@ -142,20 +133,23 @@ ${action.description}
     .get('planning')
     .get('tasks')
     .map(
-      ({ name, description, status }) => `\
-<task name="${name}" status="${status}">
-${description}
+      ({ name, description, status, steps }) => `\
+<task name="${name}" status="${status}" description="${description}">
+${steps
+  .map(
+    ({ name, status, description }) => `\
+<step name="${name}" status="${status}" description="${description}"/>`,
+  )
+  .join('\n')}
 </task>`,
     )
     .join('\n');
 
-  const task = state.get('execution').get('task');
-  const currentTask = task
-    ? `\
-<task name="${task.name}" status="${task.status}">
-${task.description}
-</task>`
-    : '';
+  const task = state.get('execution').get('task') ?? '';
+  const currentTask =
+    task &&
+    `\
+<task name="${task.name}" status="${task.status}" description="${task.description}"/>`;
 
   return `\
 Generate precise, actionable steps to complete a specific current_task using available tools and context information.
