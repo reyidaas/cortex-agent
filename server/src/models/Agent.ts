@@ -69,7 +69,7 @@ export class Agent {
       step.update({ result });
 
       if (step.tool === 'final-answer') {
-        nextTask.update({ final: true });
+        nextTask.update({ finished: true });
         break;
       }
     }

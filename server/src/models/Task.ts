@@ -14,7 +14,7 @@ export class Task {
   description: string;
   status: TaskStatus;
   steps: TaskStep[];
-  final: boolean;
+  finished: boolean;
   createdAt: Date;
   updatedAt: Date;
 
@@ -24,7 +24,7 @@ export class Task {
     this.description = description;
     this.status = 'pending';
     this.steps = [];
-    this.final = false;
+    this.finished = false;
     this.createdAt = new Date();
     this.updatedAt = new Date();
   }
