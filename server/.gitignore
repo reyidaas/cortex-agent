@@ -23,8 +23,9 @@ coverage/
 # Optional npm cache directory
 .npm
 
-# Optional eslint cache
+# Caches
 .eslintcache
+cache/
 
 # VS Code directory
 .vscode/

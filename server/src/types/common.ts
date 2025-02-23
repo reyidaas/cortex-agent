@@ -11,3 +11,7 @@ export type ResultRequestHandler<T, U = never, V = never, W = never> = RequestHa
   U,
   W
 >;
+
+export type ResourceType = 'prompts' | 'serp-results';
+
+export type ResourceValue<T extends ResourceType> = T extends 'prompts' ? string : unknown;

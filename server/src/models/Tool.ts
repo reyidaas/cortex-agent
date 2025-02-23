@@ -7,7 +7,7 @@ interface ToolArgs<T extends object> {
 
 export abstract class Tool<T extends object> {
   name: ToolName;
-  actions: T;
+  protected actions: T;
 
   constructor({ name, actions }: ToolArgs<T>) {
     this.name = name;
