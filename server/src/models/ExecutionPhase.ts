@@ -45,11 +45,10 @@ export class ExecutionPhase extends GetterSetter<ExecutionState> {
     const response = await getStructuredCompletion({
       schema,
       name: 'generate-task-steps',
-      system: await log({
+      system: await log(generateTaskStepsPrompt(state), {
         type: 'prompts',
         state,
         name: 'GENERATE TASK STEPS',
-        value: generateTaskStepsPrompt(state),
       }),
       message,
     });
@@ -79,11 +78,10 @@ export class ExecutionPhase extends GetterSetter<ExecutionState> {
 
     const response = await getJsonCompletion({
       message,
-      system: await log({
+      system: await log(generateToolPayloadPrompt(state), {
         type: 'prompts',
         state,
         name: 'GENERATE TOOL PAYLOAD',
-        value: generateToolPayloadPrompt(state),
       }),
     });
     console.log('GENERATE TOOL PAYLOAD', response);

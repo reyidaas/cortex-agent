@@ -1,21 +1,23 @@
 import path from 'path';
 import { existsSync } from 'fs';
 import { mkdir, writeFile, readFile } from 'fs/promises';
+
+import {
+  getResourceExtension,
+  serializeResourceValue,
+  deserializeResourceValue,
+} from '@/util/resources';
 import type { ResourceType } from '@/types/common';
 
-type CacheResourceType = Extract<ResourceType, 'serp-results'>;
-
-type CacheResourceValue<T extends CacheResourceType> = T extends 'serp-results' ? unknown : never;
-
-interface CacheOptions<T extends CacheResourceType> {
+interface CacheOptions<T extends ResourceType, U> {
   name: string;
   type: T;
-  value: CacheResourceValue<T>;
+  value: U;
 }
 
-type GetFromCacheOptions<T extends CacheResourceType> = Pick<CacheOptions<T>, 'name' | 'type'>;
+type GetFromCacheOptions<T extends ResourceType, U> = Pick<CacheOptions<T, U>, 'name' | 'type'>;
 
-const saveCache = async <T extends CacheResourceType>({ name, type, value }: CacheOptions<T>) => {
+const saveCache = async <T extends ResourceType, U>({ name, type, value }: CacheOptions<T, U>) => {
   const cacheDir = path.join(process.cwd(), 'cache');
   if (!existsSync(cacheDir)) {
     await mkdir(cacheDir);
@@ -26,29 +28,32 @@ const saveCache = async <T extends CacheResourceType>({ name, type, value }: Cac
     await mkdir(resourceCacheDir);
   }
 
-  const cacheFilePath = path.join(resourceCacheDir, `${name}.json`);
-  await writeFile(cacheFilePath, JSON.stringify(value));
+  const extension = getResourceExtension(type);
+
+  const cacheFilePath = path.join(resourceCacheDir, `${name}${extension}`);
+  await writeFile(cacheFilePath, serializeResourceValue(type, value));
   console.log('Cache saved: ', cacheFilePath);
 };
 
-const getFromCache = async <T extends CacheResourceType>({
+const getFromCache = async <T extends ResourceType, U>({
   name,
   type,
-}: GetFromCacheOptions<T>): Promise<CacheResourceValue<T> | null> => {
-  const cacheFilePath = path.join(process.cwd(), 'cache', type, `${name}.json`);
+}: GetFromCacheOptions<T, U>): Promise<U | null> => {
+  const extension = getResourceExtension(type);
+  const cacheFilePath = path.join(process.cwd(), 'cache', type, `${name}${extension}`);
   if (existsSync(cacheFilePath)) {
     console.log('Rading from cache: ', cacheFilePath);
     const cacheValue = await readFile(cacheFilePath);
-    return JSON.parse(cacheValue.toString());
+    return deserializeResourceValue(type, cacheValue);
   }
 
   return null;
 };
 
-export const cache = async <T extends CacheResourceType>(
-  cb: () => Promise<CacheResourceValue<T>>,
-  options: GetFromCacheOptions<T>,
-): Promise<CacheResourceValue<T>> => {
+export const cache = async <T extends ResourceType, U>(
+  cb: () => Promise<U>,
+  options: GetFromCacheOptions<T, U>,
+): Promise<U> => {
   if (process.env.NODE_ENV === 'development') {
     const cachedValue = await getFromCache(options);
     if (cachedValue) return cachedValue;

@@ -64,7 +64,7 @@ const TOOLS = [
         {
           name: 'search',
           description: 'Use this action to search information in web.',
-          instruction: '{"queries": ["array of 3-5 query strings to perform on browser in order to retrieve requested information"]}',
+          instruction: '{"queries": ["array of 3-5 query strings to perform on search engine in order to retrieve requested information"]}',
         },
       ],
     },

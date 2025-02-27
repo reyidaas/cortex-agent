@@ -26,6 +26,8 @@ coverage/
 # Caches
 .eslintcache
 cache/
+md/
+screenshots/
 
 # VS Code directory
 .vscode/
@@ -44,3 +46,6 @@ dist/
 tmp/
 temp/
 *.tmp
+
+# Legacy
+legacy/

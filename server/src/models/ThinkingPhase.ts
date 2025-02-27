@@ -123,11 +123,10 @@ ${memoryCategories}
     const response = await getStructuredCompletion({
       schema,
       name: 'extract-environment',
-      system: await log({
+      system: await log(extractEnvironmentPrompt(environment), {
         type: 'prompts',
         state,
         name: 'ENV',
-        value: extractEnvironmentPrompt(environment),
       }),
       message,
     });
@@ -147,11 +146,10 @@ ${memoryCategories}
     const response = await getStructuredCompletion({
       schema,
       name: 'extract-personality',
-      system: await log({
+      system: await log(extractPersonalityPrompt(personality), {
         type: 'prompts',
         state,
         name: 'PERS',
-        value: extractPersonalityPrompt(personality),
       }),
       message,
     });
@@ -175,11 +173,10 @@ ${memoryCategories}
     const response = await getStructuredCompletion({
       schema,
       name: 'generate-tools-queries',
-      system: await log({
+      system: await log(generateToolsQueriesPrompt(tools, state), {
         type: 'prompts',
         state,
         name: 'TOOLS',
-        value: generateToolsQueriesPrompt(tools, state),
       }),
       message,
     });
@@ -207,11 +204,10 @@ ${memoryCategories}
     const response = await getStructuredCompletion({
       schema,
       name: 'generate-memory-categories-queries',
-      system: await log({
+      system: await log(generateMemoryCategoriesQueriesPrompt(memoryCategories, state), {
         state,
         type: 'prompts',
         name: 'MEMORY CATEGORIES',
-        value: generateMemoryCategoriesQueriesPrompt(memoryCategories, state),
       }),
       message,
     });

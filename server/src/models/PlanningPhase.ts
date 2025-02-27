@@ -74,11 +74,10 @@ ${memories}
     const response = await getStructuredCompletion({
       schema,
       name: 'generate-or-update-tasks',
-      system: await log({
+      system: await log(generateOrUpdateTasksPrompt(state), {
         type: 'prompts',
         state,
         name: 'GENERATE OR UPDATE TASKS',
-        value: generateOrUpdateTasksPrompt(state),
       }),
       message,
     });
