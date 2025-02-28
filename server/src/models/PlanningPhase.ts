@@ -2,7 +2,6 @@ import { z } from 'zod';
 
 import { generateOrUpdateTasksPrompt } from '@/prompts/tasks';
 import { getStructuredCompletion } from '@/util/openai';
-import { log } from '@/util/log';
 import { generateResultWithReasoningSchema } from '@/schema/common';
 import { State } from '@/models/State';
 import { Task } from '@/models/Task';
@@ -74,12 +73,9 @@ ${memories}
     const response = await getStructuredCompletion({
       schema,
       name: 'generate-or-update-tasks',
-      system: await log(generateOrUpdateTasksPrompt(state), {
-        type: 'prompts',
-        state,
-        name: 'GENERATE OR UPDATE TASKS',
-      }),
+      system: generateOrUpdateTasksPrompt(state),
       message,
+      log: { state },
     });
     console.log('GENERATE OR UPDATE TASKS', response);
 

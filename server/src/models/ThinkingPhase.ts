@@ -5,7 +5,6 @@ import { extractPersonalityPrompt } from '@/prompts/personality';
 import { generateToolsQueriesPrompt } from '@/prompts/tools';
 import { generateMemoryCategoriesQueriesPrompt } from '@/prompts/memories';
 import { getStructuredCompletion } from '@/util/openai';
-import { log } from '@/util/log';
 import { generateResultWithReasoningSchema } from '@/schema/common';
 import { GetterSetter } from '@/models/GetterSetter';
 import { State } from '@/models/State';
@@ -123,12 +122,9 @@ ${memoryCategories}
     const response = await getStructuredCompletion({
       schema,
       name: 'extract-environment',
-      system: await log(extractEnvironmentPrompt(environment), {
-        type: 'prompts',
-        state,
-        name: 'ENV',
-      }),
+      system: extractEnvironmentPrompt(environment),
       message,
+      log: { state },
     });
     console.log('ENV', response);
 
@@ -146,12 +142,9 @@ ${memoryCategories}
     const response = await getStructuredCompletion({
       schema,
       name: 'extract-personality',
-      system: await log(extractPersonalityPrompt(personality), {
-        type: 'prompts',
-        state,
-        name: 'PERS',
-      }),
+      system: extractPersonalityPrompt(personality),
       message,
+      log: { state },
     });
     console.log('PERS', response);
 
@@ -173,12 +166,9 @@ ${memoryCategories}
     const response = await getStructuredCompletion({
       schema,
       name: 'generate-tools-queries',
-      system: await log(generateToolsQueriesPrompt(tools, state), {
-        type: 'prompts',
-        state,
-        name: 'TOOLS',
-      }),
+      system: generateToolsQueriesPrompt(tools, state),
       message,
+      log: { state },
     });
     console.log('TOOLS', response);
 
@@ -204,12 +194,9 @@ ${memoryCategories}
     const response = await getStructuredCompletion({
       schema,
       name: 'generate-memory-categories-queries',
-      system: await log(generateMemoryCategoriesQueriesPrompt(memoryCategories, state), {
-        state,
-        type: 'prompts',
-        name: 'MEMORY CATEGORIES',
-      }),
+      system: generateMemoryCategoriesQueriesPrompt(memoryCategories, state),
       message,
+      log: { state },
     });
     console.log('MEMORY CATEGORIES', response);
 

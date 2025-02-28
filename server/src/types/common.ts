@@ -11,5 +11,3 @@ export type ResultRequestHandler<T, U = never, V = never, W = never> = RequestHa
   U,
   W
 >;
-
-export type ResourceType = 'prompts' | 'serp-results' | 'parsed-pages';

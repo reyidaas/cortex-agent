@@ -39,7 +39,7 @@ interface GetClusteredPageContentsOptions<T extends ParseType> {
 const parsePageContentToImage = async (page: Page): Promise<string[]> => {
   const url = page.url();
 
-  console.log(`Parsing images ${url}...`);
+  console.log(`Parsing images ${url}`);
   const height = 1080;
   let currentScroll = 0;
 
@@ -68,14 +68,14 @@ const parsePageContentToImage = async (page: Page): Promise<string[]> => {
 const parsePageContentToMarkdown = async (page: Page): Promise<string | null> => {
   const url = page.url();
 
-  console.log(`Parsing ${url}...`);
+  console.log(`Parsing ${url}`);
   const dom = new JSDOM(await page.content(), { url });
 
   const reader = new Readability(dom.window.document);
   const article = reader.parse();
   if (!article) return null;
 
-  console.log(`Parsed ${article.siteName} - ${article.title}`);
+  console.log(`Parsed ${url}`);
 
   const markdown = NodeHtmlMarkdown.translate(article.content);
   return markdown;
@@ -142,3 +142,7 @@ export const getClusteredPageContents = async <T extends ParseType>(
 
   return results;
 };
+
+// export const extractRelatedInfo = (content: string, query: string) => {
+// 
+// };

@@ -4,7 +4,6 @@ import { generateTaskStepsPrompt } from '@/prompts/tasks';
 import { generateToolPayloadPrompt } from '@/prompts/tools';
 import { getStructuredCompletion, getJsonCompletion } from '@/util/openai';
 import { hasPropertyOfType } from '@/util/types';
-import { log } from '@/util/log';
 import { generateResultWithReasoningSchema } from '@/schema/common';
 import { GetterSetter } from '@/models/GetterSetter';
 import { StatusError } from '@/models/StatusError';
@@ -45,12 +44,9 @@ export class ExecutionPhase extends GetterSetter<ExecutionState> {
     const response = await getStructuredCompletion({
       schema,
       name: 'generate-task-steps',
-      system: await log(generateTaskStepsPrompt(state), {
-        type: 'prompts',
-        state,
-        name: 'GENERATE TASK STEPS',
-      }),
+      system: generateTaskStepsPrompt(state),
       message,
+      log: { state },
     });
     console.log('GENERATE TASK STEPS', response);
 
@@ -78,11 +74,8 @@ export class ExecutionPhase extends GetterSetter<ExecutionState> {
 
     const response = await getJsonCompletion({
       message,
-      system: await log(generateToolPayloadPrompt(state), {
-        type: 'prompts',
-        state,
-        name: 'GENERATE TOOL PAYLOAD',
-      }),
+      system: generateToolPayloadPrompt(state),
+      log: { state },
     });
     console.log('GENERATE TOOL PAYLOAD', response);
 

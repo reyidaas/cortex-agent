@@ -2,8 +2,7 @@ import { Action } from '@/models/Action';
 import { Document } from '@/models/Document';
 import { hasPropertyOfType } from '@/util/types';
 // import { getSerpResults } from '@/util/serp';
-import { log } from '@/util/log';
-// import { cache } from '@/util/cache';
+import { log } from '@/util/resources';
 import { getClusteredPageContents } from '@/util/scraping';
 
 interface Payload {
@@ -21,22 +20,32 @@ export class WebSearch extends Action<Payload> {
     const query = payload.queries[0]!;
     const requestId = Date.now();
 
-    //     const result = await log(
-    //       await cache(() => getSerpResults(query), { type: 'serp-results', name: query }),
-    //       {
-    //         type: 'serp-results',
-    //         name: 'SERP RESULTS',
-    //         requestId,
-    //       },
-    //     );
+    //    const result = await cache(() => getSerpResults(query), {
+    //      path: 'serp-results',
+    //      fileName: `${query}.json`,
+    //      json: true,
+    //    });
+    //    await log({
+    //      value: result,
+    //      path: 'serp-results',
+    //      fileName: `${query}.json`,
+    //      requestId,
+    //      json: true,
+    //    });
 
-    await log(
-      // await getClusteredPageContents(result.map(({ link }) => link)),
-      await getClusteredPageContents(['https://www.alexcrompton.com/blog/how-to-learn-chess'], {
+    const results = await getClusteredPageContents(
+      ['https://www.alexcrompton.com/blog/how-to-learn-chess'],
+      {
         type: 'text',
-      }),
-      { type: 'parsed-pages', name: query, requestId },
+      },
     );
+    await log({
+      value: results,
+      json: true,
+      path: 'serp-results',
+      fileName: `${query}.json`,
+      requestId,
+    });
 
     return new Document('text', { text: payload.queries.join(', ') });
   }
