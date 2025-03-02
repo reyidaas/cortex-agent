@@ -64,7 +64,7 @@ export class Agent {
         .generateToolPayload(this.message, this.state);
       this.state.get('execution').set('payload', payload);
 
-      const result = await this.state.get('execution').useTool();
+      const result = await this.state.get('execution').useTool(this.message, this.state);
       step.update({ status: 'completed' });
       step.update({ result });
 

@@ -4,6 +4,7 @@ import { generateTaskStepsPrompt } from '@/prompts/tasks';
 import { generateToolPayloadPrompt } from '@/prompts/tools';
 import { getStructuredCompletion, getJsonCompletion } from '@/util/openai';
 import { hasPropertyOfType } from '@/util/types';
+import { parseKebabCase } from '@/util/formatting';
 import { generateResultWithReasoningSchema } from '@/schema/common';
 import { GetterSetter } from '@/models/GetterSetter';
 import { StatusError } from '@/models/StatusError';
@@ -46,7 +47,7 @@ export class ExecutionPhase extends GetterSetter<ExecutionState> {
       name: 'generate-task-steps',
       system: generateTaskStepsPrompt(state),
       message,
-      log: { state },
+      log: { state, name: `generate-task-steps-${parseKebabCase(this.get('task')?.name ?? '')}` },
     });
     console.log('GENERATE TASK STEPS', response);
 
@@ -74,8 +75,9 @@ export class ExecutionPhase extends GetterSetter<ExecutionState> {
 
     const response = await getJsonCompletion({
       message,
+      name: 'generate-tool-payload',
       system: generateToolPayloadPrompt(state),
-      log: { state },
+      log: { state, name: `generate-tool-payload-${parseKebabCase(this.get('step')?.name ?? '')}` },
     });
     console.log('GENERATE TOOL PAYLOAD', response);
 
@@ -86,7 +88,7 @@ export class ExecutionPhase extends GetterSetter<ExecutionState> {
     return response.result;
   }
 
-  async useTool<T extends DocumentType>(): Promise<Document<T>> {
+  async useTool<T extends DocumentType>(message: string, state: State): Promise<Document<T>> {
     const step = this.get('step');
     if (!step) {
       throw new StatusError("Can't use tool - no current step");
@@ -112,7 +114,7 @@ export class ExecutionPhase extends GetterSetter<ExecutionState> {
       throw new StatusError("Can't use tool - invalid action payload");
     }
 
-    const result = await actionInstance.execute(payload);
+    const result = await actionInstance.execute(payload, message, state);
     console.log('ACTION RESULT', result);
 
     return result;

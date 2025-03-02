@@ -7,15 +7,15 @@ import { log } from '@/util/resources';
 import type { State } from '@/models/State';
 
 interface GetCompletionArgs {
+  name: string;
   message?: string;
   model?: OpenAI.ChatModel;
   system?: string;
-  log?: { state: State } | { requestId: number };
+  log?: { state: State; name?: string };
 }
 
 interface GetStructuredCompletionArgs<T extends ZodSchema> extends GetCompletionArgs {
   schema: T;
-  name: string;
 }
 
 const getMessages = ({
@@ -47,7 +47,13 @@ export const getStructuredCompletion = async <T extends ZodSchema>({
   log: logArg,
 }: GetStructuredCompletionArgs<T>): Promise<ZodInfer<T> | null> => {
   if (logArg) {
-    await log({ value: system, path: 'prompts', fileName: `${name}.txt`, ...logArg });
+    const { name: logName, ...rest } = logArg;
+    await log({
+      value: system,
+      path: 'prompts',
+      fileName: `prompt-${logName ?? name}.txt`,
+      ...rest,
+    });
   }
 
   const response = await openai.beta.chat.completions.parse({
@@ -56,17 +62,37 @@ export const getStructuredCompletion = async <T extends ZodSchema>({
     response_format: zodResponseFormat(schema, name),
   });
 
-  return response.choices[0]?.message.parsed ?? null;
+  const result = response.choices[0]?.message.parsed ?? null;
+
+  if (logArg) {
+    const { name: logName, ...rest } = logArg;
+    await log({
+      value: result,
+      path: 'prompts',
+      fileName: `result-${logName ?? name}.json`,
+      json: true,
+      ...rest,
+    });
+  }
+
+  return result;
 };
 
 export const getJsonCompletion = async ({
+  name,
   system,
   message,
   model = 'gpt-4o-mini',
   log: logArg,
 }: GetCompletionArgs): Promise<unknown> => {
   if (logArg) {
-    await log({ value: system, path: 'prompts', fileName: `${name}.txt`, ...logArg });
+    const { name: logName, ...rest } = logArg;
+    await log({
+      value: system,
+      path: 'prompts',
+      fileName: `prompt-${logName ?? name}.txt`,
+      ...rest,
+    });
   }
 
   const response = await openai.chat.completions.create({
@@ -75,5 +101,18 @@ export const getJsonCompletion = async ({
     response_format: { type: 'json_object' },
   });
 
-  return JSON.parse(response?.choices[0]?.message.content ?? 'null');
+  const result = JSON.parse(response?.choices[0]?.message.content ?? 'null');
+
+  if (logArg) {
+    const { name: logName, ...rest } = logArg;
+    await log({
+      value: result,
+      path: 'prompts',
+      fileName: `result-${logName ?? name}.json`,
+      json: true,
+      ...rest,
+    });
+  }
+
+  return result;
 };

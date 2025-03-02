@@ -1,8 +1,14 @@
 import type { customsearch_v1 } from 'googleapis';
 
 import { serp } from '@/clients/serp';
+import { log } from '@/util/resources';
+import type { State } from '@/models/State';
 
-interface GetSerpResultsOptions {
+interface LogOptions {
+  log?: { state: State };
+}
+
+interface GetSerpResultsOptions extends LogOptions {
   num?: number;
 }
 
@@ -12,7 +18,7 @@ const EXCLUDED_DOMAINS = ['youtube.com', 'reddit.com'] as const;
 
 export const getSerpResults = async (
   query: string,
-  { num = 3 }: GetSerpResultsOptions = {},
+  { num = 3, log: logArg }: GetSerpResultsOptions = {},
 ): Promise<SerpResult[]> => {
   const enhancedQuery = `${query} ${EXCLUDED_DOMAINS.map((domain) => `-site:${domain}`).join(' ')}`;
 
@@ -23,9 +29,20 @@ export const getSerpResults = async (
     num,
   });
 
-  return (
+  const results =
     serpResult.data.items
       ?.filter((result): result is SerpResult => !!result.link)
-      .map(({ title, link, snippet }) => ({ title, link, snippet })) ?? []
-  );
+      .map(({ title, link, snippet }) => ({ title, link, snippet })) ?? [];
+
+  if (logArg) {
+    await log({
+      value: results,
+      path: 'serp-results',
+      fileName: `${query}.json`,
+      json: true,
+      ...logArg,
+    });
+  }
+
+  return results;
 };

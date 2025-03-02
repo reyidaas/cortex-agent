@@ -33,6 +33,7 @@ export class PlanningPhase extends GetterSetter<PlanningState> {
           case 'memories':
             return this.parseMemoriesToPromptText();
           case 'tasks':
+            return this.parseTasksToPromptText();
           default:
             return '';
         }
@@ -56,6 +57,39 @@ ${content}
 <memories>
 ${memories}
 </memories>`;
+  }
+
+  private parseTasksToPromptText(): string {
+    const tasks = this.get('tasks').map(
+      ({ name, description, status, steps }) => `\
+<task name="${name}" status="${status}" description="${description}">
+${
+  steps.length
+    ? `\
+<steps>
+${steps.map(
+  (step) => `\
+<step name="${step.name}" status="${step.status}" description="${step.description}">
+${
+  step.result
+    ? `\
+<result>
+${step.result.value.text}
+</result>`
+    : ''
+}
+</step>`,
+)}
+</steps>`
+    : ''
+}
+</task>`,
+    );
+
+    return `\
+<tasks>
+${tasks}
+</tasks>`;
   }
 
   async generateOrUpdateTasks(message: string, state: State): Promise<GeneratedTask[]> {

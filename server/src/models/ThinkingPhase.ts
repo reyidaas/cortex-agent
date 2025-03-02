@@ -128,7 +128,11 @@ ${memoryCategories}
     });
     console.log('ENV', response);
 
-    return response && response.result;
+    let env = `Current date: ${new Date().toDateString()}\nCurrent time: ${new Date().toLocaleTimeString()}`;
+
+    if (response?.result) env += `\n${response.result}`;
+
+    return env;
   }
 
   async extractPersonality(message: string, state: State): Promise<string | null> {

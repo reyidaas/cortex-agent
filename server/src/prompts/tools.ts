@@ -111,7 +111,6 @@ export const generateToolPayloadPrompt = (state: State): string => {
       .get('tools')
       .find(({ name }) => toolName === name) ?? '';
   const action = tool && (tool.actions.find(({ name }) => name === actionName) ?? '');
-  const tasks = state.get('planning').get('tasks');
   const currentTask = state.get('execution').get('task') ?? '';
   const currentStep = state.get('execution').get('step') ?? '';
 
@@ -192,37 +191,7 @@ ${
 }
 </selected_tool>
 
-<tasks>
-${tasks
-  .map(
-    ({ name, description, status, steps }) => `\
-<task name="${name} status="${status}" description="${description}">
-${
-  steps.length
-    ? `\
-<steps>
-${steps
-  .map(
-    (step) => `\
-<step name="${step.name} status="${step.status}" description="${step.description}">
-${
-  step.result
-    ? `\
-<result>
-${step.result.value.text}
-</result>`
-    : ''
-}
-</step>`,
-  )
-  .join('\n')}
-</steps>`
-    : ''
-}
-</task>`,
-  )
-  .join('\n')}
-</tasks>
+${state.get('planning').parseToPromptText(['tasks'])}
 
 ${
   currentTask &&

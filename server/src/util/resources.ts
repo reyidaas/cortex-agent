@@ -58,11 +58,7 @@ const getResourcePath = ({
   return { dir: dirPath, filePath: path.join(dirPath, fileName) };
 };
 
-const createResource = async ({
-  value,
-  json,
-  ...rest
-}: CreateResourceArgs): Promise<void> => {
+const createResource = async ({ value, json, ...rest }: CreateResourceArgs): Promise<void> => {
   if (!value) return;
 
   const { dir, filePath } = getResourcePath(rest);
@@ -106,7 +102,7 @@ export const cache = async <T>(
   console.log('Value not found in cache ', pathArg);
 
   const value = await cb();
-  await createResource({ path: pathArg, resourceBasePath: 'cache', value, ...rest });
+  await createResource({ path: pathArg, resourceBasePath: 'cache', value, json, ...rest });
 
   console.log('Value saved to cache ', pathArg);
 
