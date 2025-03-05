@@ -5,8 +5,17 @@ export const generateOrUpdateTasksPrompt = (state: State): string => {
     .get('config')
     .get('tools')
     .map(
-      ({ name, description }) => `\
-<tool name="${name}" description="${description}"/>`,
+      ({ name, description, actions }) => `\
+<tool name="${name}" description="${description}">
+<actions>
+${actions
+  .map(
+    (action) => `\
+<action name="${action.name}" description="${action.description}"/>`,
+  )
+  .join('\n')}
+</actions>
+</tool>`,
     )
     .join('\n');
 

@@ -84,7 +84,7 @@ const parsePageContentToMarkdown = async (page: Page): Promise<string | null> =>
 
   const reader = new Readability(dom.window.document);
   const article = reader.parse();
-  if (!article || article.textContent.length < 100) return null;
+  if (!article || article.textContent.length < 200) return null;
 
   console.log(`Parsed ${url}`);
 

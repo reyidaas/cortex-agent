@@ -14,8 +14,10 @@ const TOOLS = [
       create: [
         {
           name: 'text',
-          description: 'Use this action to send a text response to the user.',
-          instruction: '{"answer": "text, that will be the final answer to the user"}',
+          description:
+            'Use this action to send a final text response to the user after finalising all other actions, or there are no additional actions needed.',
+          instruction:
+            '{"answer": "Text, that will be the final answer to the user message. It might be simple answer, if there were no more actions taken, otherwise it should summarize taken actions recalled memories (if any), inform about results, etc. It is the direct answer to user\'s message."}',
         },
       ],
     },
@@ -63,8 +65,10 @@ const TOOLS = [
       create: [
         {
           name: 'search',
-          description: 'Use this action to search information in web.',
-          instruction: '{"queries": ["array of 3-5 query strings to perform on search engine in order to retrieve requested information"]}',
+          description:
+            'Use this action to search information in web and generate summary on your findings.',
+          instruction:
+            '{"queries": ["array of 3-5 query strings to perform on search engine in order to retrieve requested information. Make sure to use keywords helping in finding contentful pages (article, blog, news, documantation, etc.). Choose them relative to the context of user request."]}',
         },
       ],
     },
@@ -87,19 +91,19 @@ const TOOLS = [
       ],
     },
   },
-  {
-    name: 'ai-model',
-    description: 'Use this tool generate content with usage of base AI model knowledge.',
-    actions: {
-      create: [
-        {
-          name: 'summarize',
-          description: 'Use this action to create summaries.',
-          instruction: '{"text": "the text to be summarized"}',
-        },
-      ],
-    },
-  },
+  //  {
+  //    name: 'ai-model',
+  //    description: 'Use this tool generate content with usage of base AI model knowledge.',
+  //    actions: {
+  //      create: [
+  //        {
+  //          name: 'summarize',
+  //          description: 'Use this action to create summaries.',
+  //          instruction: '{"text": "the text to be summarized"}',
+  //        },
+  //      ],
+  //    },
+  //  },
 ] as const satisfies Prisma.ToolCreateInput[];
 const MEMORY_CATEGORIES = [
   {
@@ -140,7 +144,7 @@ const MEMORY_CATEGORIES = [
         personality: {
           create: {
             content:
-              'The user is a software engineer, specialising in fullstack web development. He likes italian food.',
+              "The user's name is Michal. The user is a software engineer, specialising in fullstack web development. He likes italian food.",
           },
         },
       },

@@ -89,11 +89,11 @@ export const log = async ({ path: pathArg, ...rest }: LogArgs): Promise<void> =>
 
 export const cache = async <T>(
   cb: () => Promise<T>,
-  { path: pathArg, json, ...rest }: CacheArgs,
+  { path: pathArg, json, fileName }: CacheArgs,
 ): Promise<T> => {
   console.log('Reading cache from ', pathArg);
 
-  const cachedValue = await getResource({ path: pathArg, resourceBasePath: 'cache', ...rest });
+  const cachedValue = await getResource({ path: pathArg, resourceBasePath: 'cache', fileName });
   if (cachedValue) {
     console.log('Value found in cache ', pathArg);
     return json ? JSON.parse(cachedValue) : cachedValue;
@@ -102,7 +102,18 @@ export const cache = async <T>(
   console.log('Value not found in cache ', pathArg);
 
   const value = await cb();
-  await createResource({ path: pathArg, resourceBasePath: 'cache', value, json, ...rest });
+
+  const shouldCache = (() => {
+    const trimmed = fileName.trim();
+    if (!trimmed.length) return false;
+    if (!trimmed.includes('.')) return true;
+    if (!trimmed.slice(0, trimmed.lastIndexOf('.')).length) return false;
+    return true;
+  })();
+
+  if (shouldCache) {
+    await createResource({ path: pathArg, resourceBasePath: 'cache', value, fileName, json });
+  }
 
   console.log('Value saved to cache ', pathArg);
 

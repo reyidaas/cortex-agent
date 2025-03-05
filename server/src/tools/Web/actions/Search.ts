@@ -23,13 +23,19 @@ export class WebSearch extends Action<Payload> {
     state: State,
   ): Promise<Document<'text'>> {
     // TODO: enable more queries
-    const query = payload.queries[0]!;
+    // const query = payload.queries[0]!;
 
-    const serpResults = await cache(() => getSerpResults(query, { log: { state } }), {
-      path: 'serp-results',
-      fileName: `${query}.json`,
-      json: true,
-    });
+    const serpResults = (
+      await Promise.all(
+        payload.queries.map((query) =>
+          cache(() => getSerpResults(query, { log: { state } }), {
+            path: 'serp-results',
+            fileName: `${query}.json`,
+            json: true,
+          }),
+        ),
+      )
+    ).flatMap((results) => results);
 
     const parseResults = await getClusteredPageContents(
       serpResults.map(({ link }) => link),

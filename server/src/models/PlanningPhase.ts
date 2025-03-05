@@ -60,15 +60,17 @@ ${memories}
   }
 
   private parseTasksToPromptText(): string {
-    const tasks = this.get('tasks').map(
-      ({ name, description, status, steps }) => `\
+    const tasks = this.get('tasks')
+      .map(
+        ({ name, description, status, steps }) => `\
 <task name="${name}" status="${status}" description="${description}">
 ${
   steps.length
     ? `\
 <steps>
-${steps.map(
-  (step) => `\
+${steps
+  .map(
+    (step) => `\
 <step name="${step.name}" status="${step.status}" description="${step.description}">
 ${
   step.result
@@ -79,12 +81,14 @@ ${step.result.value.text}
     : ''
 }
 </step>`,
-)}
+  )
+  .join('\n')}
 </steps>`
     : ''
 }
 </task>`,
-    );
+      )
+      .join('\n');
 
     return `\
 <tasks>
