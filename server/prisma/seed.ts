@@ -17,7 +17,12 @@ const TOOLS = [
           description:
             'Use this action to send a final text response to the user after finalising all other actions, or there are no additional actions needed.',
           instruction:
-            '{"answer": "Text, that will be the final answer to the user message. It might be simple answer, if there were no more actions taken, otherwise it should summarize taken actions recalled memories (if any), inform about results, etc. It is the direct answer to user\'s message."}',
+            `{"answer": "Provide a clear, direct response to the user's message. If you performed any actions (such as retrieving information, making calculations, or recalling specific memories), summarize these actions and their results. Structure your answer as follows:
+              - For simple queries: Provide a concise, straightforward answer
+              - For complex queries requiring multiple steps: Briefly outline the actions taken and present the final results
+              - When relevant, cite sources or explain your reasoning process
+              Your response should be comprehensive yet focused on addressing the user's specific needs without unnecessary elaboration.
+            "}`,
         },
       ],
     },
@@ -68,7 +73,13 @@ const TOOLS = [
           description:
             'Use this action to search information in web and generate summary on your findings.',
           instruction:
-            '{"queries": ["array of 3-5 query strings to perform on search engine in order to retrieve requested information. Make sure to use keywords helping in finding contentful pages (article, blog, news, documantation, etc.). Choose them relative to the context of user request."]}',
+            `{"queries": ["3-5 search queries optimized for retrieving high-quality, structured content about the user's request. Each query should:
+                -	Include domain-specific terminology relevant to the topic
+                -	Incorporate content type indicators (guide, tutorial, documentation, research paper, case study)
+                -	Use search operators where appropriate (site:, filetype:, intitle:)
+                -	Focus on authoritative sources by including terms like 'official', 'expert', or specific trusted domains
+                -	Be specific enough to filter out promotional content"
+             ]}`,
         },
       ],
     },
