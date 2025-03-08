@@ -35,8 +35,8 @@ export class Agent {
   async plan(): Promise<void> {
     const generatedTasks = await this.state
       .get('planning')
-      .generateOrUpdateTasks(this.message, this.state);
-    this.state.get('planning').updateTasks(generatedTasks);
+      .generateTasks(this.message, this.state);
+    this.state.get('planning').set('tasks', generatedTasks);
   }
 
   async execute(): Promise<void> {

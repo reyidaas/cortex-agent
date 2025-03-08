@@ -1,7 +1,7 @@
 import { z } from 'zod';
 import { Signale } from 'signale';
 
-import { generateOrUpdateTasksPrompt } from '@/prompts/tasks';
+import { generateTasksPrompt } from '@/prompts/tasks';
 import { getStructuredCompletion } from '@/util/openai';
 import { generateResultWithReasoningSchema } from '@/schema/common';
 import { State } from '@/models/State';
@@ -15,9 +15,9 @@ interface PlanningState {
   logger: Signale;
 }
 
-type GeneratedTask = Pick<Task, 'name' | 'description' | 'status'> & {
-  id: string | null;
-};
+// type GeneratedTask = Pick<Task, 'name' | 'description' | 'status'> & {
+//   id: string | null;
+// };
 
 export class PlanningPhase extends GetterSetter<PlanningState> {
   constructor() {
@@ -98,16 +98,14 @@ ${tasks}
 </tasks>`;
   }
 
-  async generateOrUpdateTasks(message: string, state: State): Promise<GeneratedTask[]> {
+  async generateTasks(message: string, state: State): Promise<Task[]> {
     this.get('logger').note('Generating tasks...');
 
     const schema = generateResultWithReasoningSchema(
       z.array(
         z.object({
-          id: z.string().or(z.null()),
           name: z.string(),
           description: z.string(),
-          status: z.enum(['pending', 'completed']),
         }),
       ),
     );
@@ -115,7 +113,7 @@ ${tasks}
     const response = await getStructuredCompletion({
       schema,
       name: 'generate-or-update-tasks',
-      system: generateOrUpdateTasksPrompt(state),
+      system: generateTasksPrompt(state),
       message,
       log: { state },
     });
@@ -124,20 +122,20 @@ ${tasks}
       response && response.result.map(({ name }, i) => `${i + 1}. ${name}`).join('\n'),
     );
 
-    return response?.result ?? [];
+    return response?.result.map((task) => new Task({ ...task })) ?? [];
   }
 
-  updateTasks(tasks: GeneratedTask[]) {
-    this.set('tasks', (currentTasks) =>
-      tasks.map(({ id, name, description }) => {
-        const existingTask = id && currentTasks.find((task) => id === task.id);
-        if (existingTask) {
-          existingTask.update({ name, description });
-          return existingTask;
-        }
-
-        return new Task({ name, description });
-      }),
-    );
-  }
+  //   updateTasks(tasks: GeneratedTask[]) {
+  //     this.set('tasks', (currentTasks) =>
+  //       tasks.map(({ id, name, description }) => {
+  //         const existingTask = id && currentTasks.find((task) => id === task.id);
+  //         if (existingTask) {
+  //           existingTask.update({ name, description });
+  //           return existingTask;
+  //         }
+  //
+  //         return new Task({ name, description });
+  //       }),
+  //     );
+  //   }
 }

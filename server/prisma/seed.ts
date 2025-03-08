@@ -77,6 +77,7 @@ const TOOLS = [
                 -	Include domain-specific terminology relevant to the topic
                 -	Incorporate content type indicators (guide, tutorial, documentation, research paper, case study)
                 -	Use search operators where appropriate (site:, filetype:, intitle:)
+                -	Do not try to generate queries, that will lead to content, that is hard to parse from html to markdown (such as pages with pdfs)
                 -	Focus on authoritative sources by including terms like 'official', 'expert', or specific trusted domains
                 -	Be specific enough to filter out promotional content"
              ]}`,

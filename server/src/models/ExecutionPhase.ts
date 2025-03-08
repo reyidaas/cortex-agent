@@ -55,7 +55,12 @@ export class ExecutionPhase extends GetterSetter<ExecutionState> {
     });
     this.get('logger').info(
       `Here is the plan for the task "${this.get('task')?.name}":\n`,
-      response && response.result.map(({ name }, i) => `${i + 1}. ${name}`).join('\n'),
+      response &&
+        response.result
+          .map(
+            ({ name, tool, action }, i) => `${i + 1}. ${name} (tool: ${tool}, action: ${action})`,
+          )
+          .join('\n'),
     );
 
     return (response?.result as GeneratedTaskStep[]) ?? [];
