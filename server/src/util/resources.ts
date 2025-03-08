@@ -80,9 +80,7 @@ const getResource = async (args: GetResourceArgs): Promise<string | null> => {
 };
 
 export const log = async ({ path: pathArg, ...rest }: LogArgs): Promise<void> => {
-  console.log('Saving log to ', pathArg);
   const resource = await createResource({ path: pathArg, resourceBasePath: 'logs', ...rest });
-  console.log('Log saved to ', pathArg);
 
   return resource;
 };
@@ -91,15 +89,10 @@ export const cache = async <T>(
   cb: () => Promise<T>,
   { path: pathArg, json, fileName }: CacheArgs,
 ): Promise<T> => {
-  console.log('Reading cache from ', pathArg);
-
   const cachedValue = await getResource({ path: pathArg, resourceBasePath: 'cache', fileName });
   if (cachedValue) {
-    console.log('Value found in cache ', pathArg);
     return json ? JSON.parse(cachedValue) : cachedValue;
   }
-
-  console.log('Value not found in cache ', pathArg);
 
   const value = await cb();
 
@@ -114,8 +107,6 @@ export const cache = async <T>(
   if (shouldCache) {
     await createResource({ path: pathArg, resourceBasePath: 'cache', value, fileName, json });
   }
-
-  console.log('Value saved to cache ', pathArg);
 
   return value;
 };

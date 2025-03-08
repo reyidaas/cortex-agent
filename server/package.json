@@ -26,6 +26,7 @@
     "puppeteer-cluster": "^0.24.0",
     "puppeteer-extra": "^3.3.6",
     "puppeteer-extra-plugin-stealth": "^2.11.2",
+    "signale": "^1.4.0",
     "ts-node": "^10.9.2",
     "typescript": "^5.5.4",
     "zod": "^3.24.1"
@@ -35,6 +36,7 @@
     "@types/express": "^4.17.21",
     "@types/jsdom": "^21.1.7",
     "@types/node": "^22.0.0",
+    "@types/signale": "^1.4.7",
     "prisma": "^6.2.1",
     "tsconfig-paths": "^4.2.0"
   }

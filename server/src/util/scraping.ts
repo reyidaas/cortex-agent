@@ -3,9 +3,10 @@ import { writeFile } from 'fs/promises';
 import { z } from 'zod';
 import { Cluster } from 'puppeteer-cluster';
 import { Readability } from '@mozilla/readability';
-import { JSDOM } from 'jsdom';
+import { JSDOM, VirtualConsole } from 'jsdom';
 import { NodeHtmlMarkdown } from 'node-html-markdown';
 import type { Page } from 'puppeteer';
+import type { Signale } from 'signale';
 
 import { puppeteer } from '@/clients/puppeteer';
 import { extractRelevantPageInfoPrompt } from '@/prompts/scraping';
@@ -45,12 +46,10 @@ type ParseResult<T extends ParseType> = T extends 'text' ? ParseResultText : Par
 
 interface GetClusteredPageContentsOptions<T extends ParseType> extends LogOptions {
   type?: T;
+  cliLogger?: Signale;
 }
 
 const parsePageContentToImage = async (page: Page): Promise<string[]> => {
-  const url = page.url();
-
-  console.log(`Parsing images ${url}`);
   const height = 1080;
   let currentScroll = 0;
 
@@ -61,7 +60,6 @@ const parsePageContentToImage = async (page: Page): Promise<string[]> => {
 
   do {
     base64Screenshots.push(await page.screenshot({ encoding: 'base64' }));
-    console.log(`Parsed ${base64Screenshots.length}`);
     const offset = currentScroll + height - 100;
 
     await page.evaluate((scrollValue) => {
@@ -72,21 +70,17 @@ const parsePageContentToImage = async (page: Page): Promise<string[]> => {
     currentScroll = offset;
   } while (currentScroll < scrollHeight);
 
-  console.log(`Parsed ${base64Screenshots.length} images ${url}`);
   return base64Screenshots;
 };
 
 const parsePageContentToMarkdown = async (page: Page): Promise<string | null> => {
   const url = page.url();
 
-  console.log(`Parsing ${url}`);
-  const dom = new JSDOM(await page.content(), { url });
+  const dom = new JSDOM(await page.content(), { url, virtualConsole: new VirtualConsole() });
 
   const reader = new Readability(dom.window.document);
   const article = reader.parse();
   if (!article || article.textContent.length < 200) return null;
-
-  console.log(`Parsed ${url}`);
 
   const markdown = NodeHtmlMarkdown.translate(article.content);
   return markdown;
@@ -94,7 +88,7 @@ const parsePageContentToMarkdown = async (page: Page): Promise<string | null> =>
 
 export const getClusteredPageContents = async <T extends ParseType>(
   urls: string[],
-  { type, log: logArg }: GetClusteredPageContentsOptions<T> = {},
+  { type, log: logArg, cliLogger }: GetClusteredPageContentsOptions<T> = {},
 ): Promise<ParseResult<T>[]> => {
   const cluster = await Cluster.launch({
     concurrency: Cluster.CONCURRENCY_CONTEXT,
@@ -108,8 +102,9 @@ export const getClusteredPageContents = async <T extends ParseType>(
   await cluster.task(async ({ data, page }) => {
     await page.goto(data, { waitUntil: 'networkidle2' });
     const url = page.url();
-
     const name = extractNameFromUrl(url);
+
+    if (cliLogger) cliLogger.info(`Parsing url: ${url}`);
 
     switch (type) {
       case 'image':

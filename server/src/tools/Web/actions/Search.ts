@@ -42,6 +42,7 @@ export class WebSearch extends Action<Payload> {
       {
         type: 'text',
         log: { state },
+        cliLogger: this.logger,
       },
     );
 

@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { Signale } from 'signale';
 
 import { extractEnvironmentPrompt } from '@/prompts/environment';
 import { extractPersonalityPrompt } from '@/prompts/personality';
@@ -24,6 +25,7 @@ interface ThinkingState {
   personality: string | null;
   tools: ToolQuery[] | null;
   memories: MemoryQuery[] | null;
+  logger: Signale;
 }
 
 export class ThinkingPhase extends GetterSetter<ThinkingState> {
@@ -33,6 +35,7 @@ export class ThinkingPhase extends GetterSetter<ThinkingState> {
       personality: null,
       tools: null,
       memories: null,
+      logger: new Signale({ scope: 'thinking' }),
     });
   }
 
@@ -112,6 +115,8 @@ ${memoryCategories}
   }
 
   async extractEnvironment(message: string, state: State): Promise<string | null> {
+    this.get('logger').note('Extracting environment...');
+
     const environment = state.get('config').get('environment')?.content;
     if (!environment) {
       this.set('environment', null);
@@ -126,7 +131,6 @@ ${memoryCategories}
       message,
       log: { state },
     });
-    console.log('ENV', response);
 
     let env = `Current date: ${new Date().toDateString()}\nCurrent time: ${new Date().toLocaleTimeString()}`;
 
@@ -136,6 +140,8 @@ ${memoryCategories}
   }
 
   async extractPersonality(message: string, state: State): Promise<string | null> {
+    this.get('logger').note('Extracting personality...');
+
     const personality = state.get('config').get('personality')?.content;
     if (!personality) {
       this.set('personality', null);
@@ -150,12 +156,13 @@ ${memoryCategories}
       message,
       log: { state },
     });
-    console.log('PERS', response);
 
     return response && response.result;
   }
 
   async generateToolsQueries(message: string, state: State): Promise<ToolQuery[] | null> {
+    this.get('logger').note('Generating initial tool queries...');
+
     const tools = state.get('config').get('tools');
     const schema = generateResultWithReasoningSchema(
       z
@@ -174,7 +181,6 @@ ${memoryCategories}
       message,
       log: { state },
     });
-    console.log('TOOLS', response);
 
     return response && response.result;
   }
@@ -183,6 +189,8 @@ ${memoryCategories}
     message: string,
     state: State,
   ): Promise<MemoryQuery[] | null> {
+    this.get('logger').note('Generating initial memory categories queries...');
+
     const memoryCategories = state.get('config').get('memoryCategories');
     const schema = generateResultWithReasoningSchema(
       z
@@ -202,7 +210,6 @@ ${memoryCategories}
       message,
       log: { state },
     });
-    console.log('MEMORY CATEGORIES', response);
 
     return response && response.result;
   }

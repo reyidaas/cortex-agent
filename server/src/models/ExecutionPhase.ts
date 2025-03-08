@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { Signale } from 'signale';
 
 import { generateTaskStepsPrompt } from '@/prompts/tasks';
 import { generateToolPayloadPrompt } from '@/prompts/tools';
@@ -19,16 +20,19 @@ interface ExecutionState {
   task: Task | null;
   step: TaskStep | null;
   payload: unknown;
+  logger: Signale;
 }
 
 type GeneratedTaskStep = Pick<TaskStep, 'name' | 'description' | 'tool' | 'action'>;
 
 export class ExecutionPhase extends GetterSetter<ExecutionState> {
   constructor() {
-    super({ task: null, step: null, payload: null });
+    super({ task: null, step: null, payload: null, logger: new Signale({ scope: 'exectution' }) });
   }
 
   async generateCurrentTaskSteps(message: string, state: State): Promise<GeneratedTaskStep[]> {
+    this.get('logger').note('Generating task steps...');
+
     const schema = generateResultWithReasoningSchema(
       z.array(
         z.object({
@@ -49,7 +53,10 @@ export class ExecutionPhase extends GetterSetter<ExecutionState> {
       message,
       log: { state, name: `generate-task-steps-${parseKebabCase(this.get('task')?.name ?? '')}` },
     });
-    console.log('GENERATE TASK STEPS', response);
+    this.get('logger').info(
+      `Here is the plan for the task "${this.get('task')?.name}":\n`,
+      response && response.result.map(({ name }, i) => `${i + 1}. ${name}`).join('\n'),
+    );
 
     return (response?.result as GeneratedTaskStep[]) ?? [];
   }
@@ -73,13 +80,14 @@ export class ExecutionPhase extends GetterSetter<ExecutionState> {
       throw new StatusError('Action not found');
     }
 
+    this.get('logger').note(`Generating payload for tool: ${tool.name}, action: ${action.name}`);
+
     const response = await getJsonCompletion({
       message,
       name: 'generate-tool-payload',
       system: generateToolPayloadPrompt(state),
       log: { state, name: `generate-tool-payload-${parseKebabCase(this.get('step')?.name ?? '')}` },
     });
-    console.log('GENERATE TOOL PAYLOAD', response);
 
     if (!hasPropertyOfType('result', 'object')(response)) {
       throw new StatusError('Incorrect generated JSON');
@@ -94,7 +102,6 @@ export class ExecutionPhase extends GetterSetter<ExecutionState> {
       throw new StatusError("Can't use tool - no current step");
     }
 
-    console.log('STEP', step);
     if (!Tool.isValidToolName(step.tool)) {
       throw new StatusError("Can't use tool - invalid tool name in current step");
     }
@@ -104,6 +111,8 @@ export class ExecutionPhase extends GetterSetter<ExecutionState> {
     if (!toolInstance.validateActionName(step.action)) {
       throw new StatusError("Can't use tool - invalid action name in current step");
     }
+
+    this.get('logger').note(`Using tool: ${step.tool}, action: ${step.action}`);
 
     // @ts-ignore
     const SelectedAction = toolInstance.getAction(step.action);
@@ -115,7 +124,6 @@ export class ExecutionPhase extends GetterSetter<ExecutionState> {
     }
 
     const result = await actionInstance.execute(payload, message, state);
-    console.log('ACTION RESULT', result);
 
     return result;
   }

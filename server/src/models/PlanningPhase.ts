@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { Signale } from 'signale';
 
 import { generateOrUpdateTasksPrompt } from '@/prompts/tasks';
 import { getStructuredCompletion } from '@/util/openai';
@@ -11,6 +12,7 @@ import type { Memory } from '@/prompts/memories';
 interface PlanningState {
   tasks: Task[];
   memories: Memory[];
+  logger: Signale;
 }
 
 type GeneratedTask = Pick<Task, 'name' | 'description' | 'status'> & {
@@ -19,7 +21,7 @@ type GeneratedTask = Pick<Task, 'name' | 'description' | 'status'> & {
 
 export class PlanningPhase extends GetterSetter<PlanningState> {
   constructor() {
-    super({ tasks: [], memories: [] });
+    super({ tasks: [], memories: [], logger: new Signale({ scope: 'planning' }) });
   }
 
   parseToPromptText(fields: (keyof PlanningState)[]): string {
@@ -97,6 +99,8 @@ ${tasks}
   }
 
   async generateOrUpdateTasks(message: string, state: State): Promise<GeneratedTask[]> {
+    this.get('logger').note('Generating tasks...');
+
     const schema = generateResultWithReasoningSchema(
       z.array(
         z.object({
@@ -115,7 +119,10 @@ ${tasks}
       message,
       log: { state },
     });
-    console.log('GENERATE OR UPDATE TASKS', response);
+    this.get('logger').info(
+      'Here is the plan:\n',
+      response && response.result.map(({ name }, i) => `${i + 1}. ${name}`).join('\n'),
+    );
 
     return response?.result ?? [];
   }

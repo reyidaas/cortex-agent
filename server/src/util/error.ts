@@ -1,4 +1,5 @@
 import type { ErrorRequestHandler } from 'express';
+import signale from 'signale';
 
 import type { StatusError } from '@/models/StatusError';
 import type { ResultResponse } from '@/types/common';
@@ -8,7 +9,7 @@ export const errorRequestHandler: ErrorRequestHandler<
   unknown,
   ResultResponse<Pick<StatusError, 'message' | 'status'>>
 > = (error: unknown, _, res, __) => {
-  console.error('ERROR: ', error);
+  signale.error('ERROR: ', error);
 
   const message = hasPropertyOfType('message', 'string')(error)
     ? error.message
