@@ -12,6 +12,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "@doist/todoist-api-typescript": "^4.0.0-alpha.4",
     "@mozilla/readability": "^0.5.0",
     "@prisma/client": "^6.2.1",
     "bcryptjs": "^2.4.3",

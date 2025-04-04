@@ -1,11 +1,13 @@
 import type { PrismaClient } from '@prisma/client';
 import type { OpenAI } from 'openai';
 import type { customsearch_v1 } from 'googleapis';
+import type { TodoistApi } from '@doist/todoist-api-typescript';
 
 declare global {
   var prisma: PrismaClient | undefined;
   var openai: OpenAI | undefined;
   var serp: customsearch_v1.Customsearch;
+  var todoist: TodoistApi;
 
   namespace NodeJS {
     interface ProcessEnv {
@@ -18,6 +20,7 @@ declare global {
       OPENAI_ORG_ID: string;
       GOOGLE_API_KEY: string;
       GOOGLE_SEARCH_ENGINE_ID: string;
+      TODOIST_API: string;
     }
   }
 

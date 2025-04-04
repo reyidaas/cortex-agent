@@ -51,12 +51,12 @@ const TOOLS = [
     actions: {
       create: [
         {
-          name: 'search',
+          name: 'get-tasks',
           description: 'Use this action to search for tasks on todo list.',
           instruction: '',
         },
         {
-          name: 'create',
+          name: 'create-task',
           description: 'Use this action to create task on todo list.',
           instruction: '',
         },
