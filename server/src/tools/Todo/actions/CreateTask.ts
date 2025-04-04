@@ -21,6 +21,6 @@ export class TodoCreateTask extends Action<AddTaskArgs> {
     _state: State,
   ): Promise<Document<'text'>> {
     const task = await createTask(payload);
-    return new Document('text', { text: task.id });
+    return new Document('text', { text: `Task created: "${task.content}"` });
   }
 }

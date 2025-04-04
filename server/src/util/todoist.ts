@@ -1,9 +1,9 @@
-import type { AddTaskArgs, Task } from '@doist/todoist-api-typescript';
+import type { AddTaskArgs, Task, GetTasksArgs } from '@doist/todoist-api-typescript';
 
 import { todoist } from '@/clients/todoist';
 
-export const getTasks = async (): Promise<Task[]> => {
-  const response = await todoist.getTasks();
+export const getTasks = async (args?: GetTasksArgs): Promise<Task[]> => {
+  const response = await todoist.getTasks(args);
   return response.results;
 };
 

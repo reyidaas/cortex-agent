@@ -16,8 +16,7 @@ const TOOLS = [
           name: 'text',
           description:
             'Use this action to send a final text response to the user after finalising all other actions, or there are no additional actions needed.',
-          instruction:
-            `{"answer": "Provide a clear, direct response to the user's message. If you performed any actions (such as retrieving information, making calculations, or recalling specific memories), summarize these actions and their results. Structure your answer as follows:
+          instruction: `{"answer": "Provide a clear, direct response to the user's message. If you performed any actions (such as retrieving information, making calculations, or recalling specific memories), summarize these actions and their results. Structure your answer as follows:
               - For simple queries: Provide a concise, straightforward answer
               - For complex queries requiring multiple steps: Briefly outline the actions taken and present the final results
               - When relevant, cite sources or explain your reasoning process
@@ -53,12 +52,13 @@ const TOOLS = [
         {
           name: 'get-tasks',
           description: 'Use this action to search for tasks on todo list.',
-          instruction: '',
+          instruction: '{}',
         },
         {
           name: 'create-task',
           description: 'Use this action to create task on todo list.',
-          instruction: '',
+          instruction:
+            '{"content": "Title of the task generated based on user message.", "description": "Optional field. If there is no point in creating additional description for the task, skip it. It is an additional description for a task."}',
         },
       ],
     },
@@ -72,8 +72,7 @@ const TOOLS = [
           name: 'search',
           description:
             'Use this action to search information in web and generate summary on your findings.',
-          instruction:
-            `{"queries": ["3-5 search queries optimized for retrieving high-quality, structured content about the user's request. Each query should:
+          instruction: `{"queries": ["3-5 search queries optimized for retrieving high-quality, structured content about the user's request. Each query should:
                 -	Include domain-specific terminology relevant to the topic
                 -	Incorporate content type indicators (guide, tutorial, documentation, research paper, case study)
                 -	Use search operators where appropriate (site:, filetype:, intitle:)
