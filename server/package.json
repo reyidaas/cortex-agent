@@ -6,7 +6,8 @@
   "scripts": {
     "dev": "nodemon --ext ts --files -r tsconfig-paths/register src/index.ts",
     "start": "ts-node -r tsconfig-paths/register src/index.ts",
-    "seed": "ts-node prisma/seed.ts"
+    "seed": "ts-node prisma/seed.ts",
+    "run-script": "ts-node scripts/run.ts"
   },
   "keywords": [],
   "author": "",

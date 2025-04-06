@@ -5,11 +5,11 @@ const EXPORT_TOOLS_TEXT = 'export const tools = {' as const;
 const EXPORT_ACTIONS_TEXT = 'export const actions = {};' as const;
 
 (async () => {
-  const [, scriptPath, toolName, refName] = process.argv;
-  if (!scriptPath || !toolName || !refName) throw new Error('Insufficient arguments');
+  const [, , toolName, refName] = process.argv;
+  if (!toolName || !refName) throw new Error('Insufficient arguments');
 
   const toolsPath = path.join(
-    scriptPath.slice(0, scriptPath.lastIndexOf('/')),
+    __dirname,
     '..',
     'src',
     'tools',
@@ -27,7 +27,8 @@ const EXPORT_ACTIONS_TEXT = 'export const actions = {};' as const;
   const toolsIndexContent = await readFile(toolsIndexPath, 'utf-8');
 
   const toolsStartIndex = toolsIndexContent.indexOf(EXPORT_TOOLS_TEXT) + EXPORT_TOOLS_TEXT.length;
-  if (toolsStartIndex - EXPORT_TOOLS_TEXT.length  === -1) throw new Error('Tools start index could not be found');
+  if (toolsStartIndex - EXPORT_TOOLS_TEXT.length === -1)
+    throw new Error('Tools start index could not be found');
   const toolsEndIndex = toolsIndexContent.slice(toolsStartIndex).indexOf('}') + toolsStartIndex + 1;
   if (toolsEndIndex - toolsStartIndex === 0) throw new Error('Tools end index could not be found');
 

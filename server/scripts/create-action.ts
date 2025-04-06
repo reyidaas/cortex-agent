@@ -4,12 +4,12 @@ import { mkdir, writeFile, readFile, access } from 'fs/promises';
 const EXPORT_ACTIONS_TEXT = 'export const actions = {' as const;
 
 (async () => {
-  const [, scriptPath, toolName, actionName, refName] = process.argv;
-  if (!scriptPath || !toolName || !actionName || !refName)
+  const [, , toolName, actionName, refName] = process.argv;
+  if (!toolName || !actionName || !refName)
     throw new Error('Insufficient arguments');
 
   const toolPath = path.join(
-    scriptPath.slice(0, scriptPath.lastIndexOf('/')),
+    __dirname,
     '..',
     'src',
     'tools',

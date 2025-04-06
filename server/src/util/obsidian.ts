@@ -33,3 +33,7 @@ export const createNote = async (title: string, content: string): Promise<void> 
   const notePath = path.join(cortexNotesPath, `${title}.md`);
   await writeFile(notePath, content);
 };
+
+export const generateNoteLink = (title: string): string => {
+  return `obsidian://open?vault=${process.env.OBSIDIAN_VAULT_PATH.slice(process.env.OBSIDIAN_VAULT_PATH.lastIndexOf('/') + 1)}&file=${encodeURIComponent(path.join('Cortex', `${title}`))}`;
+};
