@@ -21,6 +21,7 @@ declare global {
       GOOGLE_API_KEY: string;
       GOOGLE_SEARCH_ENGINE_ID: string;
       TODOIST_API: string;
+      OBSIDIAN_VAULT_PATH: string;
     }
   }
 

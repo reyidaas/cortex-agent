@@ -64,6 +64,20 @@ const TOOLS = [
     },
   },
   {
+    name: 'obsidian',
+    description: 'Use this tool to interact with notes in Obsidian notes app.',
+    actions: {
+      create: [
+        {
+          name: 'create-note',
+          description: 'Use this action to create note in Obsidian vault.',
+          instruction:
+            '{"title": "Title of the note, that will be created.", "content": "Content of the note, that will be created."}',
+        },
+      ],
+    },
+  },
+  {
     name: 'web',
     description: 'Use this tool to access web.',
     actions: {
