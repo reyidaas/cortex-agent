@@ -4,8 +4,6 @@ import path from 'path';
 import { accessible } from '@/util/fs';
 import { StatusError } from '@/models/StatusError';
 
-console.log('OBSIDIAN', process.env.OBSIDIAN_VAULT_PATH);
-
 export const createNote = async (title: string, content: string): Promise<void> => {
   if (!title) {
     throw new StatusError('Title must be specified');
@@ -35,5 +33,5 @@ export const createNote = async (title: string, content: string): Promise<void> 
 };
 
 export const generateNoteLink = (title: string): string => {
-  return `obsidian://open?vault=${process.env.OBSIDIAN_VAULT_PATH.slice(process.env.OBSIDIAN_VAULT_PATH.lastIndexOf('/') + 1)}&file=${encodeURIComponent(path.join('Cortex', `${title}`))}`;
+  return `obsidian://open?vault=${encodeURIComponent(process.env.OBSIDIAN_VAULT_PATH.slice(process.env.OBSIDIAN_VAULT_PATH.lastIndexOf('/') + 1))}&file=${encodeURIComponent(path.join('Cortex', `${title}`))}`;
 };

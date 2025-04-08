@@ -103,16 +103,15 @@ ${state.get('thinking').parseToPromptText(['environment', 'personality'])}
 };
 
 export const generateToolPayloadPrompt = (state: State): string => {
-  const toolName = state.get('execution').get('step')?.tool ?? '';
-  const actionName = state.get('execution').get('step')?.action ?? '';
+  const task = state.get('execution').get('task');
+  const toolName = task?.tool ?? '';
+  const actionName = task?.action ?? '';
   const tool =
     state
       .get('config')
       .get('tools')
       .find(({ name }) => toolName === name) ?? '';
   const action = tool && (tool.actions.find(({ name }) => name === actionName) ?? '');
-  const currentTask = state.get('execution').get('task') ?? '';
-  const currentStep = state.get('execution').get('step') ?? '';
 
   return `\
 <prompt_objective>
@@ -130,7 +129,7 @@ Generate a JSON payload that strictly follows the provided payload_structure, us
   1. payload_structure (structure definition)
   2. user message (current request)
   3. tasks (current context)
-  4. current_step (current context)
+  4. current_task (current context)
   5. memories (historical context)
   6. environment (situational context)
   7. personality (general context)
@@ -194,10 +193,10 @@ ${
 ${state.get('planning').parseToPromptText(['tasks'])}
 
 ${
-  currentTask &&
-  currentStep &&
-  `\
-<current_step task_name="${currentTask.name}" name="${currentStep.name}" status="${currentStep.status}" description="${currentStep.description}"/>`
+  task
+    ? `\
+<current_task name="${task.name}" status="${task.status}" description="${task.description}"/>`
+    : ''
 }
 
 <payload_structure>

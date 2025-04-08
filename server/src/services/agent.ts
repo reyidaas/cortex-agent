@@ -11,7 +11,7 @@ export const runAgent = async (userId: string, message: string): Promise<string>
   await agent.execute();
 
   let iterations = 1;
-  while (!agent.state.get('execution').get('task')?.finished) {
+  while (!agent.state.get('execution').get('finished')) {
     if (iterations > MAX_ITERATIONS) {
       throw new StatusError('Maximum iterations exceeded');
     }
@@ -20,5 +20,5 @@ export const runAgent = async (userId: string, message: string): Promise<string>
     iterations++;
   }
 
-  return agent.state.get('execution').get('step')?.result?.value.text ?? 'Error';
+  return agent.state.get('execution').get('task')?.result?.value.text ?? 'Error';
 };

@@ -1,6 +1,6 @@
 import { randomUUID } from 'crypto';
 
-import type { TaskStep } from '@/models/TaskStep';
+import type { Document, DocumentType } from './Document';
 
 export type TaskStatus = 'pending' | 'completed';
 
@@ -13,18 +13,25 @@ export class Task {
   name: string;
   description: string;
   status: TaskStatus;
-  steps: TaskStep[];
-  finished: boolean;
+  tool: string;
+  action: string;
+  result: Document<DocumentType> | null;
   createdAt: Date;
   updatedAt: Date;
 
-  constructor({ name, description }: Pick<Task, 'name' | 'description'>) {
+  constructor({
+    name,
+    description,
+    tool,
+    action,
+  }: Pick<Task, 'name' | 'description' | 'tool' | 'action'>) {
     this.id = randomUUID();
     this.name = name;
     this.description = description;
+    this.tool = tool;
+    this.action = action;
+    this.result = null;
     this.status = 'pending';
-    this.steps = [];
-    this.finished = false;
     this.createdAt = new Date();
     this.updatedAt = new Date();
   }

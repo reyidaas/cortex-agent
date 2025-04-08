@@ -28,7 +28,7 @@ export class ObsidianCreateNote extends Action<Payload> {
   ): Promise<Document<'text'>> {
     await createNote(title, content);
     return new Document('text', {
-      text: `Created note: ${title}\nLink to note: ${generateNoteLink(title)}`,
+      text: `Note created: ${title}\nLink to note: ${generateNoteLink(title)}`,
     });
   }
 }

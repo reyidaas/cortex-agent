@@ -22,7 +22,7 @@ export class GetTasks extends Action<GetTasksArgs> {
     const tasks = await getTasks(payload);
     return tasks.length
       ? new Document('text', {
-          text: `Found tasks: - ${tasks.map(({ content }) => `"${content}"`).join('\n- ')}`,
+          text: `Tasks found: - ${tasks.map(({ content }) => `"${content}"`).join('\n- ')}`,
         })
       : new Document('text', { text: 'No tasks found' });
   }

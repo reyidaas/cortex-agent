@@ -1,6 +1,5 @@
 import { State } from '@/models/State';
 import { Config } from '@/models/Config';
-import { TaskStep } from '@/models/TaskStep';
 import { StatusError } from '@/models/StatusError';
 
 export class Agent {
@@ -33,9 +32,7 @@ export class Agent {
   }
 
   async plan(): Promise<void> {
-    const generatedTasks = await this.state
-      .get('planning')
-      .generateTasks(this.message, this.state);
+    const generatedTasks = await this.state.get('planning').generateTasks(this.message, this.state);
     this.state.get('planning').set('tasks', generatedTasks);
   }
 
@@ -50,31 +47,17 @@ export class Agent {
 
     this.state.get('execution').set('task', nextTask);
 
-    const generatedSteps = await this.state
-      .get('execution')
-      .generateCurrentTaskSteps(this.message, this.state);
-    const steps = generatedSteps.map((step) => new TaskStep(step));
-    nextTask.update({ steps });
+    const payload = await this.state.get('execution').generateToolPayload(this.message, this.state);
+    this.state.get('execution').set('payload', payload);
 
-    for (const step of nextTask.steps) {
-      this.state.get('execution').set('step', step);
-
-      const payload = await this.state
-        .get('execution')
-        .generateToolPayload(this.message, this.state);
-      this.state.get('execution').set('payload', payload);
-
-      const result = await this.state.get('execution').useTool(this.message, this.state);
-      step.update({ status: 'completed' });
-      step.update({ result });
-
-      if (step.tool === 'final-answer') {
-        nextTask.update({ finished: true });
-        break;
-      }
-    }
+    const result = await this.state.get('execution').useTool(this.message, this.state);
 
     nextTask.update({ status: 'completed' });
+    nextTask.update({ result });
+
+    if (nextTask.tool === 'final-answer') {
+      this.state.get('execution').set('finished', true);
+    }
   }
 
   static async new(userId: string, message: string): Promise<Agent> {

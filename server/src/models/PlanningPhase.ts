@@ -15,10 +15,6 @@ interface PlanningState {
   logger: Signale;
 }
 
-// type GeneratedTask = Pick<Task, 'name' | 'description' | 'status'> & {
-//   id: string | null;
-// };
-
 export class PlanningPhase extends GetterSetter<PlanningState> {
   constructor() {
     super({ tasks: [], memories: [], logger: new Signale({ scope: 'planning' }) });
@@ -64,31 +60,17 @@ ${memories}
   private parseTasksToPromptText(): string {
     const tasks = this.get('tasks')
       .map(
-        ({ name, description, status, steps }) => `\
-<task name="${name}" status="${status}" description="${description}">
+        ({ name, description, status, tool, action, result }) => `\
+<task name="${name}" status="${status}" description="${description}" toolName="${tool}" actionName="${action}">
 ${
-  steps.length
-    ? `\
-<steps>
-${steps
-  .map(
-    (step) => `\
-<step name="${step.name}" status="${step.status}" description="${step.description}">
-${
-  step.result
+  result
     ? `\
 <result>
-${step.result.value.text}
+${result.value.text}
 </result>`
     : ''
 }
-</step>`,
-  )
-  .join('\n')}
-</steps>`
-    : ''
-}
-</task>`,
+`,
       )
       .join('\n');
 
@@ -106,13 +88,15 @@ ${tasks}
         z.object({
           name: z.string(),
           description: z.string(),
+          tool: z.string(),
+          action: z.string(),
         }),
       ),
     );
 
     const response = await getStructuredCompletion({
       schema,
-      name: 'generate-or-update-tasks',
+      name: 'generate-tasks',
       system: generateTasksPrompt(state),
       message,
       log: { state },
